@@ -1,16 +1,20 @@
 # amf/api/namf_loc.py
-# Created by Kai Wang G on 2025-05-22.
 # Namf_Location service (NLg reference point: GMLC -> AMF)
-# Forwards DetermineLocation to LMF via Nlmf_Location service (NLs reference point)
+# Forwards DetermineLocation to LMF (NLs: AMF -> LMF)
+# Suspends until LMF completes LPP exchange and returns final location
 # Ref: 3GPP TS 29.518 (Namf), 3GPP TS 29.572 (Nlmf)
 
+import asyncio
+import uuid
+import logging
+from datetime import datetime, timezone
+
+import httpx
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from datetime import datetime, timezone
-import httpx
-import logging
+
 from amf import config
-import asyncio
+from amf import session
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -19,7 +23,6 @@ LMF_AVAILABLE = False
 async def monitor_lmf():
     global LMF_AVAILABLE
     prev_status = None
-
     while True:
         try:
             async with httpx.AsyncClient(timeout=2.0) as client:
@@ -29,62 +32,89 @@ async def monitor_lmf():
             LMF_AVAILABLE = False
 
         if LMF_AVAILABLE != prev_status:
-            status_str = "AVAILABLE" if LMF_AVAILABLE else "UNAVAILABLE"
-            logging.info(f"LMF status changed: {status_str}")
+            logging.info(f"LMF status changed: {'AVAILABLE' if LMF_AVAILABLE else 'UNAVAILABLE'}")
             prev_status = LMF_AVAILABLE
-
         await asyncio.sleep(5)
 
 router = APIRouter()
 
-# NLg: GMLC -> AMF (Namf_Location_ProvidePositioningInfo)
-# Per 3GPP TS 29.518
+# NLg: GMLC -> AMF  (Namf_Location_ProvidePositioningInfo)
 @router.post("/namf-loc/v1/{ueContextId}/provide-pos-info")
 async def provide_pos_info(ueContextId: str, body: dict):
     supi = body.get("supi")
     gpsi = body.get("gpsi")
 
-    # Build DetermineLocation request per 3GPP TS 29.572 Section 6.1.3.2
-    # NLs: AMF -> LMF (Nlmf_Location_DetermineLocation)
+    if not LMF_AVAILABLE:
+        logging.warning(f"[{ueContextId}] LMF unavailable, returning fallback.")
+        return JSONResponse(content=_fallback(ueContextId, supi, gpsi), status_code=206)
+
+    # Generate correlation ID to track this session
+    correlation_id = str(uuid.uuid4())
+
+    # AMF callback base URI — LMF will POST N1MessageNotify back here
+    amf_callback_uri = f"http://{config.AMF_HOST}:{config.AMF_PORT}"
+
+    # Build Nlmf_Location_DetermineLocation request per 3GPP TS 29.572
     lmf_request = {
-        "supi": supi,
-        "gpsi": gpsi,
-        "ueContextId": ueContextId,
-        "lcsClientType": body.get("lcsClientType"),
-        "lcsLocation": body.get("lcsLocation"),
-        "priority": body.get("priority"),
-        "lcsQoS": body.get("lcsQoS"),
-        "velocityRequested": body.get("velocityRequested"),
-        "lcsSupportedGADShapes": body.get("lcsSupportedGADShapes"),
+        "supi":                       supi,
+        "gpsi":                       gpsi,
+        "ueContextId":                ueContextId,
+        "lcsClientType":              body.get("lcsClientType"),
+        "lcsLocation":                body.get("lcsLocation"),
+        "priority":                   body.get("priority"),
+        "lcsQoS":                     body.get("lcsQoS"),
+        "velocityRequested":          body.get("velocityRequested"),
+        "lcsSupportedGADShapes":      body.get("lcsSupportedGADShapes"),
         "additionalLcsSuppGADShapes": body.get("additionalLcsSuppGADShapes"),
-        "servingNrCellId": body.get("servingNrCellId"),
-        "lcsCorrelationId": body.get("lcsCorrelationId"),
-        "amfId": config.AMF_INSTANCE_ID,
+        "servingNrCellId":            body.get("servingNrCellId"),
+        "lcsCorrelationId":           correlation_id,
+        "amfId":                      config.AMF_INSTANCE_ID,
+        "amfCallbackUri":             amf_callback_uri,
     }
 
-    lmf_endpoint = f"http://{config.LMF_HOST}:{config.LMF_PORT}/nlmf-loc/v1/determine-location"
+    # Register pending session — will be resolved by namf_comm when LMF responds
+    event = asyncio.Event()
+    session.pending[correlation_id] = {
+        "event":            event,
+        "result":           None,
+        "ueContextId":      ueContextId,
+        "lmf_callback_uri": "",   # filled in by LMF's first N1N2MessageTransfer
+    }
 
-    if LMF_AVAILABLE:
-        try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.post(lmf_endpoint, json=lmf_request)
-                response.raise_for_status()
-                lmf_data = response.json()
-                logging.info(f"[{ueContextId}] Received DetermineLocation response from LMF")
-                return JSONResponse(content={"supi": supi, "gpsi": gpsi, **lmf_data})
-        except Exception as e:
-            logging.warning(f"[{ueContextId}] LMF DetermineLocation failed, using fallback. Reason: {e}")
-            return JSONResponse(content=fallback_location_response(ueContextId, supi, gpsi), status_code=206)
-    else:
-        logging.warning(f"[{ueContextId}] LMF unavailable, using fallback.")
-        return JSONResponse(content=fallback_location_response(ueContextId, supi, gpsi), status_code=206)
+    try:
+        lmf_endpoint = f"http://{config.LMF_HOST}:{config.LMF_PORT}/nlmf-loc/v1/determine-location"
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.post(lmf_endpoint, json=lmf_request)
+            if resp.status_code not in (200, 202):
+                logging.warning(f"[{ueContextId}] LMF rejected DetermineLocation: {resp.status_code}")
+                session.pending.pop(correlation_id, None)
+                return JSONResponse(content=_fallback(ueContextId, supi, gpsi), status_code=206)
+    except Exception as e:
+        logging.error(f"[{ueContextId}] Failed to reach LMF: {e}")
+        session.pending.pop(correlation_id, None)
+        return JSONResponse(content=_fallback(ueContextId, supi, gpsi), status_code=206)
+
+    # Wait for LMF to complete LPP exchange and post final result back
+    try:
+        await asyncio.wait_for(event.wait(), timeout=30.0)
+    except asyncio.TimeoutError:
+        logging.warning(f"[{ueContextId}] Timed out waiting for LMF location result.")
+        session.pending.pop(correlation_id, None)
+        return JSONResponse(content=_fallback(ueContextId, supi, gpsi), status_code=206)
+
+    result = session.pending.pop(correlation_id, {}).get("result")
+    if not result:
+        return JSONResponse(content=_fallback(ueContextId, supi, gpsi), status_code=206)
+
+    logging.info(f"[{ueContextId}] Location result received from LMF, returning to GMLC.")
+    return JSONResponse(content=result)
 
 
-def fallback_location_response(ueContextId, supi, gpsi):
+def _fallback(ueContextId, supi, gpsi):
     return {
         "ueContextId": ueContextId,
-        "supi": supi,
-        "gpsi": gpsi,
+        "supi":        supi,
+        "gpsi":        gpsi,
         "locationEstimate": {
             "shape": "POINT_ALTITUDE_UNCERTAINTY",
             "point": {"lon": -96.83208102986727, "lat": 33.07484112585842},
@@ -94,14 +124,16 @@ def fallback_location_response(ueContextId, supi, gpsi):
             "confidence": 95
         },
         "accuracyFulfilmentIndicator": "REQUESTED_ACCURACY_FULFILLED",
-        "ageOfLocationEstimate": 0,
+        "ageOfLocationEstimate":       0,
         "timestampOfLocationEstimate": datetime.now(timezone.utc).isoformat(),
         "positioningDataList": [
-            {"method": "NR_ECID", "mode": "CONVENTIONAL", "usage": "SUCCESS_RESULTS_USED_TO_GENERATE_LOCATION"},
-            {"method": "CELLID", "mode": "CONVENTIONAL", "usage": "SUCCESS_RESULTS_NOT_USED"}
+            {"method": "NR_ECID", "mode": "CONVENTIONAL",
+             "usage": "SUCCESS_RESULTS_USED_TO_GENERATE_LOCATION"},
+            {"method": "CELLID", "mode": "CONVENTIONAL",
+             "usage": "SUCCESS_RESULTS_NOT_USED"}
         ],
         "ncgi": {
-            "plmnId": {"mcc": "240", "mnc": "80"},
+            "plmnId":   {"mcc": "240", "mnc": "80"},
             "nrCellId": "927D201E"
         }
     }
