@@ -1,5 +1,18 @@
 # Change History
 
+## [0.4] - 2026-08-18
+
+### Added
+- `udm/api/ueau.py` — `GET /nudm-ueau/v1/{supi}/security-information` (authentication data, 3GPP TS 29.503)
+- `udm/api/sdm.py` — `GET /nudm-sdm/v1/{supi}/nssai`, `am-data`, `smf-select-data` (subscription data)
+- UDM static data (IMEI, IMSI, AMF info, MCC/MNC) moved to `config.json` under `udm.static_data`
+
+### Changed
+- `udm/api/uecm.py` — now reads static data from `config.json` instead of hardcoded values
+- `udm/main.py` — registered ueau and sdm routers
+
+---
+
 ## [0.3] - 2026-08-18
 
 ### Added
@@ -58,7 +71,5 @@
 ## Pending
 
 - [ ] Implement LMF module (Phase 4)
-- [ ] Implement UDM `/nudm-ueau/v1/{supi}/security-information`
-- [ ] Implement UDM `/nudm-sdm/v1/{supi}/...`
 - [ ] Implement real `/nlmf-loc/...` forwarding in AMF
 - [ ] Phase 6: Integration testing

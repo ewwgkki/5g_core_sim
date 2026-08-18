@@ -5,7 +5,9 @@ import logging
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from udm.api.uecm import router as udm_router
+from udm.api.uecm import router as uecm_router
+from udm.api.ueau import router as ueau_router
+from udm.api.sdm import router as sdm_router
 import httpx
 from udm import config
 
@@ -65,4 +67,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.include_router(udm_router)
+app.include_router(uecm_router)
+app.include_router(ueau_router)
+app.include_router(sdm_router)

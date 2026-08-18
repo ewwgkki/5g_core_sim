@@ -54,7 +54,7 @@ Phase Status:
 |---------|--------------------------------------------------------------------|-------------|
 | Phase 1 | NRF registration mechanism                                         | Done        |
 | Phase 2 | AMF module (startup registration, NRF monitoring, Namf/Nlmf, LMF) | Mostly done |
-| Phase 3 | UDM module (API interfaces, static/simulated data)                 | Partial     |
+| Phase 3 | UDM module (API interfaces, static/simulated data)                 | Done        |
 | Phase 4 | LMF module (optional)                                              | Not started |
 | Phase 5 | Web control panel (config + service control + status monitoring)   | Done        |
 | Phase 6 | Integration testing, full flow simulation                          | Not started |
@@ -88,8 +88,11 @@ Phase 3 - UDM Checklist:
   [x] GET /nudm-uecm/v1/msisdn-{number}/registrations/amf-3gpp-access
   [x] GET /nudm-uecm/v1/imei-{imei}/registrations/amf-3gpp-access
   [x] Returns XML format (compatible with GMLC interface)
-  [ ] GET /nudm-ueau/v1/{supi}/security-information (authentication-data)      (not implemented)
-  [ ] GET /nudm-sdm/v1/{supi}/... (subscription-data)                          (not implemented)
+  [x] GET /nudm-ueau/v1/{supi}/security-information (authentication-data)
+  [x] GET /nudm-sdm/v1/{supi}/nssai (network slice subscription data)
+  [x] GET /nudm-sdm/v1/{supi}/am-data (access and mobility subscription data)
+  [x] GET /nudm-sdm/v1/{supi}/smf-select-data (SMF selection data)
+  [x] UDM static data (IMEI, IMSI, AMF info) configurable via config.json
 
 
 Phase 5 - Web GUI Checklist:
