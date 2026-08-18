@@ -1,6 +1,6 @@
 # Change History
 
-## [0.3] - 2025-05-24
+## [0.3] - 2026-08-18
 
 ### Added
 - Web Console (`run_web.py`, `web/`) — single-page GUI for config management and service control
@@ -24,7 +24,7 @@
 
 ---
 
-## [0.2] - 2025-05-23
+## [0.2] - 2026-08-18
 
 ### Added
 - UDM module (`udm/main.py`, `udm/config.py`, `udm/api/uecm.py`)
@@ -36,7 +36,7 @@
 
 ---
 
-## [0.1] - 2025-05-21
+## [0.1] - 2026-08-18
 
 ### Added
 - NRF module (`nrf/main.py`, `nrf/config.py`, `nrf/models.py`)
