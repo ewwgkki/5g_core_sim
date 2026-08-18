@@ -15,7 +15,7 @@ Requirements:
 Project Structure:
 
 project_root/
-├── Readme.txt               <- This file
+├── README.md                <- This file
 ├── requirements.txt         <- Python dependencies
 ├── udm_requirements.txt     <- UDM-specific requirements
 ├── config.json              <- Unified config file (auto-generated, all services read from here)
