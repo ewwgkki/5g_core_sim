@@ -1,0 +1,2466 @@
+5G GMLC Description
+
+NLG
+
+User Guide
+
+18/1553-HSC 901 1780 Uen H
+
+Copyright
+
+© Ericsson AB 2025, 2026. All rights reserved. No part of this document may be
+reproduced in any form without the written permission of the copyright owner.
+
+Disclaimer
+
+The contents of this document are subject to revision without notice due to
+continued progress in methodology, design and manufacturing. Ericsson shall
+have no liability for any error or damage of any kind resulting from the use of this
+document.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Contents
+
+1
+
+2
+
+2.1
+2.1.1
+
+2.2
+2.2.1
+2.2.2
+2.2.2.1
+2.2.2.2
+2.2.2.3
+2.2.3
+2.2.3.1
+2.2.3.2
+2.2.3.3
+
+2.3
+2.3.1
+2.3.2
+2.3.3
+2.3.4
+2.3.5
+2.3.6
+2.3.7
+2.3.8
+
+2.4
+
+2.5
+2.5.1
+2.5.2
+2.5.3
+2.5.4
+2.5.5
+2.5.6
+2.5.7
+
+3
+
+3.1
+
+3.2
+
+3.3
+
+3.4
+
+Introduction
+
+Technical Description
+
+GMLC Overview
+Feature Overview
+
+Signaling Procedures
+5GS-MT-LR Standard
+5G Core Procedures
+NRF
+UDM
+AMF
+5G GMLC Indirect Communication
+Generic 3GPP Indirect Communication Flow
+Basic Indirect Operation Flow Handling
+Error Handling during Indirect Communication
+
+5G GMLC Features
+Parameter Settings
+Destination Selection
+NRF Destination Selection
+IPv4, IPv6
+NCGI Translation
+Ping
+Cache
+Fallback
+
+Interfaces
+
+Supported MLP Error Codes
+MLP Error 6: POSITIONING METHOD FAILURE
+MLP Error 501: ROAMING ERROR
+MLP Error 2: UNSPECIFIED ERROR
+MLP Error 202: POSITIONING NOT ALLOWED
+MLP Error 4: UNKNOWN SUBSCRIBER
+MLP Error 5: ABSENT SUBSCRIBER
+MLP Error 1: SYSTEM FAILURE
+
+Operation and Maintenance
+
+Events
+
+Alarms
+
+Statistics
+
+Positioning Records
+
+Contents
+
+1
+
+2
+
+2
+5
+
+6
+6
+6
+6
+12
+13
+17
+18
+20
+25
+
+32
+32
+32
+33
+34
+34
+34
+35
+37
+
+37
+
+38
+38
+39
+39
+39
+39
+40
+40
+
+41
+
+41
+
+41
+
+41
+
+42
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+5G GMLC Description
+
+3.5
+
+3.6
+
+3.7
+
+3.8
+
+3.9
+
+3.10
+
+3.11
+
+4
+
+Configuration Management
+
+Feature Activation
+
+Cell Data Management
+
+License Handling
+
+Administration Portal
+
+High Availability
+
+Billing
+
+Engineering Guidelines
+
+42
+
+42
+
+42
+
+43
+
+43
+
+44
+
+44
+
+45
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Introduction
+
+1
+
+Introduction
+
+The Gateway Mobile Location Center (GMLC) deployed in 5G core (5GC) network
+supports control plane positioning for subscribers in the standalone New Radio
+(NR) network.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+1
+
+5G GMLC Description
+
+2
+
+2.1
+
+Technical Description
+
+GMLC Overview
+
+The NLG implements the GMLC Network Function (NF) defined by 3GPP
+standards. This section gives an overview of the 3GPP Location Services (LCS)
+architecture and the interfaces related to the GMLC.
+
+The 5GC architecture is service-based. The system functionality in Service-Based
+Architecture (SBA) is achieved with a set of NFs that provide service access
+to other authorized NFs. Authorization can be achieved by enabling OAuth 2.0
+support. An NF is a component of the network infrastructure that provides a
+specific functional behavior, such as location determination. An NF is made up of
+NF services.
+
+The interactions between NFs are represented in the following ways:
+
+— Reference point representation
+
+— Service-based representation
+
+Figure 1 shows the reference point representation of 5G LCS defined by 3GPP
+TS 23.501, where the interaction between NFs is described by point-to-point
+reference points.
+
+Figure 1    5G LCS Reference Point Representation
+
+The following reference points support LCS in 5GC:
+
+2
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+LeNLhNLgN2LRFAMFNLGGMLCNLsN1External ClientNG-RANUEUDMLMF5G CoreTechnical Description
+
+— N1: Reference point between a User Equipment (UE) and the Access and
+Mobility Management Function (AMF) through the Non-Access-Stratum
+(NAS)
+
+— N2: Reference point between the New Generation - Radio Access Network
+
+(NG-RAN) and the AMF
+
+— Le: Reference point between a GMLC and an LCS client
+
+The following reference points are realized by Service-Based Interfaces (SBI):
+
+— NLg: Reference point between a GMLC and the AMF
+
+— NLs: Reference point between the AMF and the Location Management
+
+Function (LMF)
+
+— NLh: Reference point between a GMLC and the User Data Management
+
+(UDM)
+
+Figure 2 shows the service-based representation of the 5G LCS architecture,
+where the network functions are interconnected through SBIs.
+
+Figure 2    Service-based Representation of 5G LCS Architecture
+
+The following SBIs are available for LCS:
+
+— Nlmf: SBI exhibited by LMF
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+3
+
+LMFUDMNRFService Based InterfaceLRFGMLCExternal ClientLeLeAMFUEgNodeBng-eNodeBNR-UuNG-CNG-CLTE-UuXnNLsNG RANNLgNamfNgmlcNudmNnrf5G GMLC Description
+
+— Namf: SBI exhibited by AMF
+
+— Nudm: SBI exhibited by UDM
+
+— Nnrf: SBI exhibited by Network Repository Function (NRF)
+
+The 5G GMLC enables the external client to request the location of a target UE in
+the 5G network. The 5G GMLC uses the Nudm interface provided by the UDM to
+request information about the AMF node that is connected to the given UE.
+
+The 5G GMLC also uses the Namf interface provided by the AMF to request
+positioning information of a specific UE. The 5G GMLC also interacts with the
+NRF through the Nnrf interface for NF service framework functions.
+
+The 5G GMLC can also receive NI-LR notifications on the Namf interface about
+positioning results performed at emergency call setup and send the location
+information to the LCS client.
+
+The 5G GMLC supports sending user-agent header on the Namf, the Nnrf, and the
+Nudm interfaces with a configurable value. For more information, see the Http2
+section in Parameter List for NLG.
+
+According to the 3GPP 23.501 standard communication models, there can be
+direct or indirect communication performed with external NFs. In the latter case,
+the communication is done through the Service Communication Proxy (SCP).
+GMLC is prepared to communicate with AMF and UDM indirectly.
+
+GMLC only supports indirect communication model C.
+
+GMLC does not support the following:
+
+— indirect communication model D
+
+— the delegation of NF producer selection to the SCP
+
+Figure 3 shows the two cases of the SCP being deployed between the NF
+consumer and producer.
+
+4
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+Figure 3    SCP Deployment between NF Consumer and Producer
+
+2.1.1
+
+Feature Overview
+
+The NLG implements the 5G GMLC entity for the 5G LCS architecture and the
+procedures defined by 3GPP. The 5G GMLC entity is located on the NLG server,
+and uses one internal supporting function, which is the database for storing NR
+cells.
+
+The 5G GMLC is capable of handling the following positioning requests:
+
+— current
+
+— last
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+5
+
+5G GMLC Description
+
+— last or current
+
+— current or last
+
+For more information, see the Cached Location section in Technical Product
+Description, NLG.
+
+2.2
+
+2.2.1
+
+Signaling Procedures
+
+5GS-MT-LR Standard
+
+The 5G GMLC can serve Mobile Terminating Location Requests (MT-LRs) with a
+UDM query or without a UDM query (cached AMF ID) over secure or non-secure
+HTTP2 connection.
+
+For more information, see the 5GS Domain Signaling Procedure section in
+Technical Product Description, NLG.
+
+2.2.2
+
+5G Core Procedures
+
+2.2.2.1
+
+NRF
+
+The 5G GMLC supports the following services toward the NRF according to the
+3GPP 29.510 TS:
+
+— Nnrf_NFDiscovery
+
+— Nnrf_NFManagement
+
+6
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+2.2.2.1.1
+
+NF Discovery
+
+Figure 4    NF Discovery Procedures
+
+The Service Discovery function is used to retrieve information about the UDM or
+the AMF. In every case, the 5G GMLC sends a GET request over HTTP2 towards
+one of the configured NRF servers. The syntax of the request is the following:
+
+<Server Address><API Prefix>nnrf-disc/v1/nf-instances?<Parameter List>
+
+The following types of discovery procedures exist:
+
+— Nnrf_NFDiscovery_request(InstanceID)
+
+— Nnrf_NFDiscovery_request(UEID)
+
+— Nnrf_NFDiscovery_request(NodeType)
+
+All the listed discovery procedure paths contain the RequesterNFType parameter,
+which is always GMLC, and the TargetNFType parameter, and they vary
+depending on the type of the discovery procedure.
+
+When OAuth 2.0 is configured, a valid access token must be provided in the
+request header.
+
+For more information on the RequesterNFType and the TargetNFType
+parameters, see the Parameter List table in AMF Provide Positioning Info Query
+on page 13.
+
+The response to a discovery request is called SearchResult, and it is received
+in JSON format. The SearchResult contains a validityPeriod integer and an
+array of NFProfiles called NfInstances.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+7
+
+Nnrf_NFDiscovery_request(InstanceID)Nnrf_NFDiscovery_response(InstanceID)Nnrf_NFDiscovery_request(UEID)Nnrf_NFDiscovery_response(UEID)Nnrf_NFDiscovery_request(NodeType)5G GMLCNRFNnrf_NFDiscovery_response(NodeType)AMF/UDM Service Discovery during MT-LR positioningAMF/UDM Service Discovery during MT-LR positioning OR Periodic cache refreshUDM Service Discovery during MT-LR positioning5G GMLC Description
+
+The validity period is applicable for all the NF instances in the SearchResult.
+The NfProfiles contain all required information to send a message to a specific
+5G node, such as the IP address and the node type.
+
+Table 1     NfProfiles Object
+
+Object Name
+
+NfProfile
+
+NfService
+
+ipEndpoint
+
+Properties
+
+— InstanceId
+
+— NfType
+
+— NfServices (array of NfService)
+
+— UdmInfo
+
+— scheme (HTTP and HTTPS)
+
+— ipEndPoints (array)
+
+— apiPrefix
+
+— ipv6Address
+
+— ipv4Address
+
+— port
+
+— TransportProtocol (always TCP)
+
+If the SearchResult does not contain any usable information, which means it
+does not meet the requirements listed in TS 29.510, the discovery procedure fails.
+
+Nnrf_NFDiscovery_request (InstanceID)
+
+This procedure is used only during a positioning when the cache does not contain
+information about the node that is associated with the user equipment, the
+position of which is requested.
+
+The TargetNFType parameter must be set to AMF or UDM.
+
+If TargetNFType is set to AMF, the service-names parameter must be set to
+namf-loc.
+
+If TargetNFType is set to UDM, the service-names parameter must be set to
+nudm-eucm.
+
+Since the TargetNfInstanceId is a unique identifier, this procedure always
+returns information about a single serving node. The IP addresses and the API
+prefix used in the 5G GMLC are the results of this procedure.
+
+Example 1    Nnrf_NFDiscovery_request
+
+127.0.0.1:12345/nnrf-disc/v1/nf-instances?target-nf-type=UDM&requester-nf-type=G →
+MLC&service-names=nudm-eucm&target-nf-instance-id=1798ecec-7306-4ab2-9adc-fcb80a →
+e948eb
+
+8
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+Nnrf_NFDiscovery_request (UEID)
+
+This procedure is similar to Nnrf_NFDiscovery_request (InstanceID). The
+difference is that it uses one of the unique IDs given by the LCS client instead of
+the InstanceID.
+
+The Target NF Type parameter is set to UDM. The service-names parameter
+must be set to nudm-eucm. The User Equipment Identifier (UEID) parameter is
+either supi or gpsi, and corresponding to that, either the supi or the gpsi
+parameter is set.
+
+The IP addresses and the API prefix obtained as the result of this procedure are
+used in the 5G GMLC.
+
+Example 2    Nnrf_NFDiscovery_request (UEID)
+
+127.0.0.1:12345/nnrf-disc/v1/nf-instances?target-nf-type=UDM&requester-nf-type=G →
+MLC&service-names=nudm-eucm&supi=imsi-132456978156314
+
+Nnrf_NFDiscovery_request (NodeType)
+
+This discovery procedure is used for the periodical cache refresh.
+
+The Target NF Type parameter must be set to AMF or UDM.
+
+The IP addresses and the API prefix obtained as the result of this procedure are
+used in the 5G GMLC. If the target NF type is set to UDM, the UdmInfo field is also
+parsed after a successful discovery, and used to build the UDM cache.
+
+The UdmInfo contains supi ranges and gpsi ranges, which determine which user
+equipments are served by that instance of the UDM.
+
+For more information on the Target NF Type, supi, and gpsi parameters, see
+the Parameter List table in AMF Provide Positioning Info Query on page 13.
+
+For more information on the cache feature, see Destination Selection on page
+32.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+9
+
+5G GMLC Description
+
+2.2.2.1.2
+
+NF Management
+
+5G GMLC
+
+NRF
+
+Nnrf_NFRegister_request(NFProfile)
+
+Nnrf_NFRegister_response(NFProfile)
+
+Nnrf_NFUpdate_request (NF InstanceID) (NF heartbeat)
+
+Nnrf_NFUpdate_response
+
+Nnrf_NFDeregister_request(InstanceID)
+
+Nnrf_NFDeregister_response
+
+Figure 5    NF Management Procedures
+
+The Nnrf_NFManagement service is used for registering the 5G GMLC NF Profile
+to the NRF server to inform other participants of the network about the
+notification callback path of the 5G GMLC.
+
+The supported Nnrf_NFManagement services are the following:
+
+— Nnrf_NFRegister
+
+— Nnrf_NFUpdate(NF heartbeat)
+
+— Nnrf_NFDeregister
+
+Nnrf_NFRegister
+
+This service is used for registering the 5G GMLC NF profile to an NRF server.
+
+The 5G GMLC sends its NF profile to the NRF server, which then registers and
+distributes it for the upcoming requests. In case of an unsuccessful registration
+process, the 5G GMLC retries the process until any of the following occurs:
+
+— The attempts reach the maximum limit.
+
+— The 5G GMLC gets a permanent error response from the NRF server.
+
+— The 5G GMLC gets a timeout.
+
+If more NRF servers are configured and the registration process to an NRF server
+fails, the 5G GMLC tries to register its NF profile to another available NRF server.
+
+10
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+If the primary server becomes available after unreachability, the 5G GMLC tries
+to shift back to the primary NRF server from another: the 5G GMLC tries to
+register to the primary server, and if it is successful, then sends a delete request to
+the previous NRF.
+
+If the registration process is successful, the NRF sends back a HTTP2 201
+Created response to the 5G GMLC.
+
+In case of error, the NRF sends HTTP2 error messages (3xx, 4xx, 5xx).
+
+In case the registration to all NRF servers fails, a new alarm is raised. For more
+information, see Alarm Descriptions for NLG.
+
+NF Profile
+
+The NF Profile supports the following attributes:
+
+— defaultNotificationSubscriptions (Array)
+
+• notificationType (LOCATION_NOTIFICATION)
+
+• callbackUri (the URL and the path where the 5G GMLC can be reached
+
+for notification)
+
+— enableOAuth
+
+— fqdn
+
+— gmlcInfo (Enum)
+
+— heartBeatTimer (Heartbeat periodic interval in sec)
+
+— ipv4Addresses
+
+— ipv6Addresses
+
+— nfInstanceId (UUID of the 5G GMLC Node)
+
+— nfProfileChangesSupportInd (Bool)
+
+— nfStatus (REGISTERED)
+
+— nfType (GMLC)
+
+Parameters
+
+For the communication parameters used between the 5G GMLC and the NRF
+server, see the Http2 section in Parameter List for NLG.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+11
+
+5G GMLC Description
+
+Nnrf_NFUpdate (NF heartbeat)
+
+The Heartbeat messages inform the NRF server that the 5G GMLC is still alive,
+functioning, and accepting communication. Heartbeat messages are periodically
+sent by the 5G GMLC toward the NRF. The NRF acknowledges them by sending
+back a HTTP2 200 OK message with the NFProfile, or a HTTP2 204 No
+Content message. The NRF can override the default notification period during
+the registration process and the 5G GMLC follows that request. If there is no
+response for three consecutive times, or if an error arrives form the NRF as a
+response, the 5G GMLC classifies the NRF server as unreachable and tries to
+register to an available NRF.
+
+Nnrf_NFDeregister
+
+If the Location Notification service is no longer available on the 5G GMLC, or if
+the 5G GMLC is shifted to another NRF, then an NF profile deregistration request
+is sent to the corresponding NRF.
+
+When OAuth 2.0 is configured, the NFDeregister header must include a valid
+access token.
+
+2.2.2.2
+
+UDM
+
+Figure 6    UDM UECM Get Query
+
+In 5G GMLC, the User Equipment Context Management Get (UECMGet) request
+is used to retrieve information about the AMF instance, which serves the user
+equipment under positioning.
+
+The GMLC sends out the request to the following path:
+
+<ServerAddress><API Prefix>nudm-uecm/v1/VarUeId/registrations/
+amf-3gpp-access.
+
+The response to this request contains an Amf3GppAccessRegistration object in
+JSON format.
+
+The Amf3GppAccessRegistration contains various information about a specific
+AMF, but the 5G GMLC only uses the following fields of it:
+
+— amfInstanceId (mandatory): If this instance ID is present in the cache, the
+GMLC uses this to forward the positioning towards the AMF. If this instance
+
+12
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Nudm_UECM_Get_request(UEID)Nudm_UECM_Get_response5G GMLCUDMAMF Instance Access Information by UEIDTechnical Description
+
+ID is present in the cache, it is used. If the ID is not present, a discovery
+procedure is triggered.
+
+— pei (optional): The request towards AMF can use the pei as a path
+
+parameter.
+
+— supi (mandatory)
+
+— purgeFlag (optional): This flag indicates whether the AMF specified with the
+
+AmfInstanceId stopped serving the UE specified by the UEID.
+
+If any of the mandatory fields is missing, the flow is canceled, and the 5G GMLC
+responds with an error message.
+
+For more information on the ServerAddress, amfInstanceId, pei, and supi
+parameters, see the Parameter List table in AMF Provide Positioning Info Query
+on page 13.
+
+When OAuth 2.0 is configured, a valid access token must be provided in the
+request header.
+
+2.2.2.3
+
+AMF
+
+When OAuth 2.0 is configured, a valid access token must be provided in the
+request header.
+
+2.2.2.3.1
+
+AMF Provide Positioning Info Query
+
+Figure 7    AMF Provide Positioning Info Query
+
+In 5G GMLC, the Provide Positioning Info (PPI) is used to retrieve information
+about a specific user equipment location. The GMLC sends out the request to the
+following path:
+
+<ServerAddress><API Prefix>namf-loc/v1/<UeContextId>/provide-pos-
+info
+
+For more information on the parameters, see Table 2.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+13
+
+Namf_Location_Provide_Pos_Info_request(UEID)Namf_Location_Provide_Pos_Info_response(UEID)5G GMLCAMFUser Equipment positioning request5G GMLC Description
+
+Attention!
+If the LCS Client sent the MSISDN of the user equipment, and the response to the UDM
+request did not contain the Permanent Equipment Identifier (PEI) of the user equipment,
+the PPI request cannot be sent, and the NLG sends back an error message to the LCS
+client, because the UeContextId is either a Subscription Permanent Identifier (SUPI)
+or a PEI. A SUPI can be made if the LCS sends an IMSI. From UDM 3GPP 29.503
+v16.8, this problem is resolved, since the Nudm_UECM_Get(Amf3GppAccessRegistration)
+response can contain SUPI. For more information, see Statement of Compliance to 3GPP
+TS 29.503 - 5G System; UDM Services. 
+
+With the PPI request, the 5G GMLC sends a JSON payload, RequestPosInfo.
+This payload can contain the following information:
+
+— lcsClientType (mandatory): The type of the LCS client that initiated
+
+the positioning request, for example emergency, lawful intercept or
+commercial.
+
+— lcsLocation (mandatory): The type of the positioning request, for example,
+
+current or last.
+
+— Priority (mandatory): The priority of the positioning request.
+
+For more information about the parameters above and additional information
+about the request, see 3GPP TS 29.518.
+
+The ProvidePosInfo response to the PPI request arrives to the 5G GMLC in a
+JSON format, which contains the location estimate of a specific user equipment
+and other important information. The location estimate itself contains a shape,
+which contains coordinates and additional information of the shape, depending
+on the shape type.
+
+There are two more important elements that can be present in the response
+JSON:
+
+— ncgi (optional): Information about the NR Cell where the user equipment is
+
+located. This can be translated into a location estimate.
+
+— positioningDataList (optional): The list of positioning techniques used
+
+during the positioning of the user equipment.
+
+If ncgi and location estimate tag are missing, the 5G GMLC responds with an
+error message. For more information about the response, see 3GPP TS 29.518.
+
+Table 2     NF Service Properties
+
+Name
+
+Server Address
+
+Format
+
+Description
+
+^IPv4|IPv6:PORT$
+
+The address of the 5G Core node.
+
+14
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+Description
+
+Optional deployment specific
+string, which has to start with a
+„/” character.
+
+An address that follows the IPv4
+protocol. The format is defined in
+TS 29.571.
+
+An address that follows the IPv6
+protocol. The format is defined in
+TS 29.571.
+
+Name
+
+API Prefix
+
+Format
+
+^/.*$
+
+IPv4
+
+IPv6
+
+PORT
+
+Table 3     Parameter List
+
+Name
+
+TargetNfType
+
+'^(([0-9]|[1-9][0-9]|1[0-9]
+[0-9]|2[0-4][0-9]|25[0-5])\.)
+{3}([0-9]|[1-9][0-9]|1[0-9]
+[0-9]|2[0-4][0-9]|25[0-5])$'
+
+- ^((:|(0?|([1-9a-f][0-9a-
+f]{0,3}))):)((0?|([1-9a-f]
+[0-9a-f]{0,3})):){0,6}(:|(0?|
+([1-9a-f][0-9a-f]{0,3})))$
+- ^((([^:]+:){7}
+([^:]+))|((([^:]+:)*[^:]+)?::
+(([^:]+:)*[^:]+)?))$
+
+min: 0
+max: 65535
+
+The port of the service, which is
+defined in TS 29.510.
+
+Format
+
+Description
+
+target-nf-type=<NFType>
+
+NFType
+
+^(NRF|UDM|AMF)$
+
+RequesterNfType
+
+requester-nf-type=GMLC
+
+TargetNfInstanceId
+
+target-nf-instance-id=<UUID>
+
+UUID
+
+UeContextId
+
+VarUeId
+
+^[0-9A-F]{8}-[0-9A-F]{4}-[4]
+[0-9A-F]{3}-[89AB][0-9A-F]
+{3}-[0-9A-F]{12}$
+
+^(supi|pei)$
+
+^(supi|gpsi)$
+
+supiParameter
+
+supi=<supi>
+
+gpsiParameter
+
+gpsi=<gpsi>
+
+peiParameter
+
+pei=<pei>
+
+The type of the NF that the
+request is sent to.
+
+One of the node types that the 5G
+GMLC communicates with. This is
+a narrowed down list from the
+standard. TS 29.510 contains the
+full list.
+
+The NF type of the request sender.
+Default value is GMLC and it is
+non configurable.
+
+The ID of the NF instance as
+defined in TS 29.571.
+
+Universally Unique Identifier. The
+version is 4.
+
+User equipment context identifier
+
+The amf3gppregistration
+request path parameter.
+
+The supi parameter of a request
+path.
+
+The gpsi parameter of a request
+path.
+
+The pei parameter of a request
+path.
+
+supi
+
+gpsi
+
+pei
+
+^(imsi-[0-9]{5,15}|nai-.+|.+)
+$
+
+The SUPI of a specific user
+equipment.
+
+^(msisdn-[0-9]{5,15}|extid-
+[^@]+@[^@]+|.+)$
+
+The Generic Public Subscription
+Identifier (GPSI) of a specific user
+equipment.
+
+^(imei-[0-9]{15}|imeisv-[0-9]
+{16}|.+)$
+
+The PEI of a specific user
+equipment.
+
+amfInstanceId
+
+UUID
+
+Instance ID of a specific AMF
+node.
+
+ratType
+
+^(NR|EUTRA|WLAN|VIRTUAL)$
+
+Radio Access Technology Type
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+15
+
+5G GMLC Description
+
+2.2.2.3.2
+
+AMF Event Notify
+
+Figure 8    AMF Event Notify
+
+The 5G GMLC accepts notifications from the AMF on an
+Namf_Location_EventNotify API about positioning results performed at the
+emergency call setup of the UE.
+
+The default API URI is as follows:
+
+http(s)://<NLG Server Address>/gmlc/namf-loc/v1/EventNotify
+
+On the Namf_Location_EventNotify API, the AMF sends a NotifiedPosInfo
+message to the GMLC with a JSON payload containing the information processed
+by the GMLC:
+
+— locationEvent
+
+— supi
+
+— gpsi
+
+— pei
+
+— locationEstimate
+
+— positioningDataList
+
+— gnssPositioningDataList
+
+— ncgi
+
+— servingNode
+
+For more information on the parameters and additional information about the
+request, see 3GPP TS 29.518.
+
+The response to the NotifiedPosInfo message can be either one of the
+following:
+
+— 204 No Content response: If the received NotifiedPosInfo is correct and
+
+the GMLC server is able to process it.
+
+16
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Namf_Location_EventNotify request (NotifiedPosInfo)204 No Content or4xx/5xx (ProblemDetails)AMF5G GMLCTechnical Description
+
+— Negative 4xx/5xx response: If either the request is incorrect or an error
+
+occurs during the processing of the message.
+
+In case of a negative response, an optional additional ProblemDetails JSON
+payload can indicate the reason of the error.
+
+In case no error occurs during the processing of the NotifiedPosInfo message,
+the GMLC can send the location information to the configured LCS client. Sending
+the EMEREP can be configured by the EnableFirstPush parameter. The content
+of the request is also saved into the internal NI-LR cache and the subscriber
+database.
+
+2.2.3
+
+5G GMLC Indirect Communication
+
+Operations
+
+ENL supports indirect communication Model C options 1 and 2, as follows:
+
+Indirect communication Model C option 1:
+
+In active indirect communication scenarios, the nodes of the 5G GMLCis using
+the 3gpp-sbi-target-apiRoot header in the request. In case of erroneous
+responses for existing operations, the Server or Via headers are added. The
+operations are as follows:
+
+— Amf3GppAccessRegistration (NLG > UDM): through the
+
+Nudm_UEContextManagement service
+
+— ProvidePositioningInfo (NLG > AMF): through the Namf_Location
+
+service
+
+— EventNotify (AMF > NLG): through the Namf_Location service
+
+Indirect communication Model C option 2:
+
+If Model C option 2 is enabled, apart from the scenarios of Model C option 1,
+the GMLC includes the following headers in the requests for target NF producer
+reselection by the SCP:
+
+— 3gpp-Sbi-Discovery-target-nf-set-id contains the target NF Set ID
+
+corresponding to the target NF selected by the NLG.
+
+— 3gpp-Sbi-Discovery-target-nf-service-set-id contains the target NF
+
+Service Set ID corresponding to the target NF selected by the NLG.
+
+Apart from the above, GMLC can parse the 3gpp-Sbi-Producer-Id header if
+present in the service response (200, 4XX, 5XX) from the SCP. This information is
+used to populate position record information for GMLC position requests.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+17
+
+5G GMLC Description
+
+Proxy Provisioning
+
+The addresses of the SCP nodes available in the network are provisioned in the
+NLG. It is possible to configure more SCP instances.
+
+An SCP is configured using its FQDN, consisting of the scheme, authority and API
+prefix parts.
+
+For more details, see the Related Information at the bottom of the section.
+
+Behavior Model
+
+A dedicated administration state switch was introduced to enable or disable the
+indirect communication approach. For more details, see the Related Information.
+
+The NLG performs round-robin load sharing among the SCP instances, and
+maintains dual TCP sessions toward every provisioned SCP instance.
+
+The NLG supports SCP monitoring functionality using the HTTP/2 PING frame
+with configurable interval between consecutive pings.
+
+Note: — In "mixed communication cases", the communication between the
+NLG and UDM and between the NLG and AMF is asymmetric, with
+the parties separately involving or leaving the SCP out from the
+message handling.
+
+— The communication between the NLG and the NRF remains direct.
+
+— It is not possible to selectively activate indirect communication
+for different 5G services. For example, it is not possible for
+Nudm_UEContextManagement to have indirect communication
+activated while it is not activated for Namf_Location.
+
+— If Model C option 2 is enabled and NRF does not send nfSetIdList
+and nfServiceSetIdList during NF Discovery, then GMLC will fall
+back to Model C option 1.
+
+— There is no fallback to direct communication if all SCPs fail.
+
+ RELATED INFORMATION 
+
+Parameter List
+
+OAM REST API v1.0 Specification
+
+2.2.3.1
+
+Generic 3GPP Indirect Communication Flow
+
+The generic flow of the 3GPP indirect communication is as follows:
+
+18
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+1. NF target selection by the service consumer, based on cache or NF discovery.
+
+2. SCP selection in a round-robin manner by the service consumer from the
+
+provisioned available SCPs.
+
+3. Service request sending by the service consumer to the SCP. The target URI
+
+is composed of the SCP API root and the service producer API path.
+
+• The service consumer also adds the following additional headers to the
+
+request:
+
+— 3gpp-sbi-target-apiRoot contains the apiRoot of the service
+
+provider.
+
+— Authorization is included if Oauth2 is enabled.
+
+•
+
+If the 5G Indirect Communication Model C option 2 is enabled, the
+service consumer also adds the following headers to the request along
+with the headers above:
+
+— 3gpp-Sbi-Discovery-target-nf-set-id contains the target NF
+
+Set ID.
+
+— 3gpp-Sbi-Discovery-target-nf-service-set-id contains the
+
+target NF Service Set ID.
+
+— NF consumer adds this information from the cached nfSetId and
+
+nfServiceSetId received during NF producer discovery, according
+to the conditions below:
+
+•
+
+•
+
+•
+
+•
+
+If the NRF does not send nfSetIdList and
+nfServiceSetIdList during NF Discovery, then the service
+request towards SCP will not include the 3gpp-Sbi-Discovery-
+* headers.
+
+If any or both of nfSetIdList and nfServiceSetIdList
+are present along with plmnList configuration (NF Profile
+configuration parameter of HTTP2 component) and if no setIds
+match the PLMN ID configured in plmnList, a fallback will
+happen to Model C option 1, and the service request will not
+include 3gpp-Sbi-Discovery-* headers.
+
+If plmnList is empty, and if any or both of nfSetIdList and
+nfServiceSetIdList are present in the Discovery response,
+then the first entry (setid) of the list is selected.
+
+If there are multiple setids matching with the same PLMN,
+then the first matching set id is selected from the nfSetIdList
+and nfServiceSetIdList.
+
+— The 3gpp-Sbi-Discovery-* headers can be used by the SCP to
+reselect the target NF producer, in case the NF producer instance
+selected by the NF consumer cannot serve the request.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+19
+
+5G GMLC Description
+
+4. Request forwarding to the service provider by the SCP.
+
+• Replacing the SCP apiRoot with the contents of the 3gpp-sbi-target-
+
+apiRoot.
+
+• Removing the 3gpp-sbi-target-apiRoot header.
+
+5. Response construction in the NF Producer.
+
+• Addition of a Server header in case of erroneous response.
+
+6. Response forwarding to the service consumer by the SCP.
+
+•
+
+•
+
+•
+
+•
+
+In case of NF producer reselection, the SCP sends the service response
+to the NF consumer with the 3gpp-Sbi-Producer-Id header, which
+contains any or all of instanceId, serviceInstanceId, nfSetId, and
+nfServiceSetID of the NF producer.
+
+If an error occurs in the SCP, it adds a Server header in the created
+erroneous response.
+
+If an error occurs and the service provider included a Server header in
+the response to the SCP, the SCP copies that response to the service
+consumer.
+
+If the SCP gets an error response from the service producer that does not
+include a Server header, a Via header is set.
+
+7. Determining the error source by the service consumer.
+
+• Trying with the new SCP if the source was the immediate SCP.
+
+2.2.3.2
+
+Basic Indirect Operation Flow Handling
+
+Positive MT-LR Flow
+
+Figure 9 indicates the difference between the direct and indirect communication
+5G MT-LR flows.
+
+20
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+21
+
+5G GMLC Description
+
+Figure 9    Positive MT-LR Flow
+
+— Steps 1 through 5 are identical with the direct communication flow, but the
+NF set ID and NF service set ID are used only in the indirect communication.
+
+— In Step 6, the NLG sends the Nudm_UECM_Get request, but the target address
+of the request is one of the addresses of the SCP node, selected from the
+provisioned list.
+
+The 3gpp-Sbi-Target-apiRoot: <UDM ApiRoot> additional HTTP header
+then guides the SCP to replace the specified SCP apiRoot with the UDM
+apiRoot. The SCP then forwards the modified request to the UDM.
+
+If indirect communication option 2 is enabled, the NLG also sends 3gpp-
+Sbi-Discovery-* headers, and receives the 3gpp-Sbi-Producer-Id header
+corresponding to the NF provider reselection done by the SCP.
+
+— Steps 7 and 8 remain identical with the direct communication flow.
+
+— In Step 9, the NLG sends the Namf_Location_ProvidePositioningInfo
+
+request to the same SCP instance as in Step 6, with the 3gpp-Sbi-Target-
+apiRoot: <AMF ApiRoot> additional HTTP header.
+
+The header value makes the SCP replace the original <SCP apiRoot/AMF
+apiPath> parameter of the GET request with <AMF apiRoot/AMF apiPath>.
+
+If indirect communication option 2 is enabled, the NLG also sends 3gpp-
+Sbi-Discovery-* headers, and receives the 3gpp-Sbi-Producer-Id header
+corresponding to the NF provider reselection done by the SCP.
+
+— At the end of the process, the SCP node forwards the response to the NLG.
+
+Positive NI-LR Flow
+
+Figure 10 depicts the flow with an incoming emergency event from the AMF
+through the SCP.
+
+22
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+Figure 10    Emergency NI-LR Flow
+
+In this case, the NLG sends the Namf_Location_EventNotify response with a
+204 response code to the same SCP instance rather than randomly choosing one
+from the provisioned list.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+23
+
+5G GMLC Description
+
+Mixed Communication: NLG Configured for Direct Communication
+
+Figure 11    NLG Configured for Direct Communication
+
+In this case, the NLG sends the Namf_Location_EventNotify response with
+a 204 response code to the same SCP instance, even if the communication is
+configured to be direct.
+
+Figure 12    NLG Configured with Indirect Communication
+
+Despite being configured with indirect communication, the NLG replies to direct
+requests with direct answers without turning to any provisioned SCP instance.
+
+24
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+2.2.3.3
+
+Error Handling during Indirect Communication
+
+Producer Errors on the UDM and AMF Side
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+25
+
+Figure 13    UDM Side Errors
+
+5G GMLC Description
+
+26
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+Figure 14    AMF Side Errors
+
+In this case, the UDM and AMF act as producers, and the NLG acts as a consumer.
+The NLG can be notified about errors in the following ways:
+
+— The producers add a Server header in the 4xx/5xx responses.
+
+— The producers skip adding the Server header. In this case, the SCP adds a
+
+Via header to the response, including its own FQDN.
+
+— Neither the producers, nor the SCP populate these headers.
+
+— The SCP returns a 504 Gateway Timeout response, specifying
+
+TARGET_NF_NOT_REACHABLE as the cause and the SCP identifier in the
+Server header.
+
+— In case of option 2, if an NF producer error happens and the NLG did send
+
+discovery headers in the request to the SCP, the SCP may resend the request
+to another NF producer according to the discovery parameters provided by
+the NLG.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+27
+
+5G GMLC Description
+
+Example 3    SCP Error During Communication with UDM
+
+28
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+29
+
+5G GMLC Description
+
+SCP Error During Communication
+
+Example 4    SCP Error During Communication with AMF
+
+30
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+The NLG treats the following cases as an SCP error:
+
+— No response from the serving SCP during indirect communication between
+
+the NLG and AMF.
+
+— A Namf_Location_ProvidePositioningInfo response with a 4xx/5xx
+(with the exception of 504 together with TARGET_NF_NOT_REACHABLE
+specified as a cause) status and the problematic SCP identifier.
+
+— The chosen SCP does not retry forwarding the request to any other SCP and
+sends back a 4xx/5xx Namf_Location_ProvidePositioningInfo response
+with a Server header containing the problematic SCP identifier.
+
+— No response from the serving SCP during indirect communication between
+
+the NLG and UDM.
+
+— A Nudm_UECM_Get response with a 4xx/5xx (with the exception of 504
+
+together with TARGET_NF_NOT_REACHABLE specified as a cause) status and
+the problematic SCP identifier.
+
+— The chosen SCP does not retry forwarding the request to any other SCP
+
+and sends back a 4xx/5xx Nudm_UECM_Get response with a Server header
+containing the problematic SCP identifier.
+
+NLG Internal Issues during Communication
+
+If the NLG cannot provide a proper response to the incoming NI-LR requests due
+to internal issues, it will continue to follow the same communication directives as
+in the proper cases:
+
+— In case of internal issues upon an incoming Namf_Location_EventNotify
+request from an SCP instance, the response will be sent back to the same
+SCP instance.
+
+— The NLG sends the Namf_Location_EventNotify response with a 4xx/5xx
+
+status code and the sender NLG identifier in the Server header.
+
+— The SCP forwards the response to the AMF that sent the request.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+31
+
+5G GMLC Description
+
+2.3
+
+2.3.1
+
+5G GMLC Features
+
+Parameter Settings
+
+Connection Establish Timeout
+
+This parameter controls for how long the 5G GMLC waits for an AMF or UDM
+connection to be established. The default value of this parameter is 100 ms,
+which can be adjusted if the NLG is installed in a high latency network.
+
+The parameter can be configured only through the OAM Rest interface. For more
+information about the OAM Rest interface, see OAM REST API v1.0 Specification.
+
+For the description of the ConnectionEstablishTimeout parameter, see the
+Http2 section in Parameter List, NLG.
+
+Secondary NRF Parameters
+
+The 5G GMLC can function with one NRF configured, secondary NRF parameters
+are not required.
+
+To establish a connection towards only one NRF in the network, the primary NRF
+IPv4, or IPv6 parameter, and the Port parameter must be filled properly, and the
+secondary NRF IPv4, IPv6, and Port parameters left empty.
+
+For the NRF parameters, see the Http2 section in Parameter List, NLG.
+
+2.3.2
+
+Destination Selection
+
+During the positioning of a UE, the 5G GMLC needs to determine to which UDM
+and AMF it sends the request. There are the following major ways to gather this
+information:
+
+— The periodically refreshed cache contains the address of the needed 5G Core
+
+node.
+
+— Discovery procedures. For more information, see NRF Destination Selection
+
+on page 33.
+
+UDM
+
+1. The GMLC checks if it has InstanceID or UEID information.
+
+2.
+
+If the GMLC has InstanceID or UEID information, it queries the cache with
+the given information. The InstanceID is preferred.
+
+Note:
+
+The InstanceID can be configured in the Network Data section on
+the GUI and the UEID comes from the LCS client.
+
+32
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+3.
+
+4.
+
+5.
+
+If the query is successful, the GMLC queries the retrieved node.
+
+If the query is unsuccessful, the GMLC starts a discovery procedure.
+
+Note:
+
+The UDM can be discovered both by InstanceID and UEID.
+
+If the discovery procedure fails with either InstanceID or UEID, the GMLC
+sends back an error message.
+
+The NLG selects the first matching UDM from the UDM cache. If the UDM cache is
+updated, another UDM might be selected, as the order of the UDMs in the cache
+is undetermined. This means that the NLG does not apply load balancing among
+matching UDMs, but the same UDM is selected for the positioning procedures.
+The selected UDM can change at cache update.
+
+AMF
+
+1. The GMLC checks if it has InstanceID.
+
+2.
+
+3.
+
+4.
+
+5.
+
+If the GMLC has InstanceID, it queries the cache with the InstanceID.
+
+If the query is successful, the GMLC queries the retrieved node.
+
+If the query is unsuccessful, the GMLC starts a discovery procedure.
+
+If the discovery procedure fails, the GMLC sends back an error message.
+
+Note:
+
+The 5G GMLC always queries the first NF instance returned by the NRF
+and stored in the cache that matches the query criteria.
+
+2.3.3
+
+NRF Destination Selection
+
+The 5G GMLC determines the availability of the configured NRF servers by
+checking if it can connect to them or not. If an NRF server address is
+configured properly on the GUI, the 5G GMLC attempts to connect to it until
+the configuration is changed, or until the 5G function or the HTTP2 component is
+shut down. If one or both of the NRFs are unavailable, an event and an alarm are
+raised containing information about the unavailable NRFs.
+
+The two configured NRF servers work as an active-standby, and only one is used
+actively for queries. By default, the primary NRF server is used actively for query.
+
+The configured NRFs can have both an IPv4 and an IPv6 address configured, see
+IPv4, IPv6 on page 34.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+33
+
+5G GMLC Description
+
+2.3.4
+
+IPv4, IPv6
+
+The 5G GMLC can communicate on both IPv4 and IPv6 with the 5G core nodes.
+5G GMLC supports fallback through preferred protocol version if the node is
+unavailable, and the secondary protocol address is present.
+
+Fallback to the not preferred IP version is only supported during connection
+creation time. If any of the AMF, UDM, or NRF requests failed, IP version fallback
+is not supported.
+
+If the connection cannot be established with an IP address with a preferred IP
+version type, then the 5G GMLC attempts to establish the connection two more
+times. After the third unsuccessful attempt, if an IP address with a not preferred
+version type is present, the 5G GMLC tries to connect to that IP address three
+times. If all three attempts fail, the 5G GMLC falls back to the original IP address,
+and tries to connect to that IP address.
+
+In case of NRF, the 5G GMLC tries to reconnect until the configuration is changed
+(modified or the given IP address is removed), or the 5G functionality of the
+component is turned off.
+
+In case of AMF or UDM, the 5G GMLC tries to reconnect until the given
+connection is deleted from the cache, or the 5G functionality of the component is
+turned off.
+
+The preference can be set by the IP Version Preference parameter. For more
+information, see the Parameters for System Settings in Cluster Level (General
+Configuration) table in the System Settings section in Parameter List, NLG.
+
+2.3.5
+
+NCGI Translation
+
+In case of SLIS/EMELIR positioning, if the AMF returns an NCGI, it is included in
+the response message towards the client.
+
+If the AMF returns an NCGI only and does not return a location estimate, the
+5G GMLC can translate the NCGI into a location estimate; see the 5GS-MT-LR
+Standard section in Technical Product Description, NLG.
+
+NCGI translation is disabled by default. To enable the feature, see the PProuter
+section in Parameter List, NLG.
+
+2.3.6
+
+Ping
+
+When the 5G GMLC successfully establishes a connection towards an NF, the 5G
+GMLC starts pinging the NF using the HTTP2 ping frame.
+
+The 5G GMLC sends the ping message to the NF every 60 seconds to keep the
+connection alive when no request is sent on that connection, and to detect if the
+NF closed the connection gracefully or not.
+
+34
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+If the ping detects that the connection is closed, or the ping times out towards
+either NRFs, the 5G GMLC tries to reestablish the connection.
+
+If the ping fails towards any NFs stored in the cache, the NF is discarded from the
+cache.
+
+2.3.7
+
+Cache
+
+The 5G GMLC implements a caching function for the connections towards the
+serving UDM and AMF network functions that are discovered periodically by
+querying the NRF over the Nnrf SBI.
+
+The period of the cache refresh is set by the validity period returned by the NRF.
+
+Note:
+
+If all requests can be served by the NFs already stored in the cache, the
+5G GMLC does not send any queries or requests towards the NRF until
+the validity period timer expires. If the NRF is updated by either the AMF
+or the UDM during the cache validity period, it is possible that the cache
+content becomes obsolete, as the 5G GMLC acts as a client only towards
+the NRF, and does not get notified of the changes.
+
+Request Timeout
+
+When 5G access is enabled (through the GUI under Networking Connections
+> Mobile Core Network > AMF/UDM > Access HTTP2), an initial discovery is
+requested immediately when the connection with at least one NRF is established.
+If the NRF responds with the proper information, the next query time is
+determined by the end of the validity period sent back in the response.
+
+If the NRF fails to respond within the discovery time, the request is disposed.
+(The discovery time is configured through the GUI under Software Management
+> NLG Components > Configuration > HTTP2 > Discovery time.) The 5G GMLC
+tries to send the request two more times with discovery time. If all attempts time
+out, the 5G GMLC schedules a new request 60 seconds later to prevent the NLG
+from flooding the NRF with requests.
+
+Note: — After the first request timeout, the 5G GMLC clears the
+
+corresponding Network Function cache to avoid using potentially
+outdated connections.
+
+— If any of the on-demand discovery requests (NFDiscovery triggered
+by individual LCS request) succeeds between the first attempt to
+query the NRF with NFDiscovery service and the request scheduled
+60 seconds later, a new Network Function service, that is not yet
+saved in the 5G GMLC cache, is stored.
+
+Graceful Cache Clear
+
+During the graceful cache cleanup, connections, that are planned to be discarded
+from the cache, either wait for the ongoing requests to receive their responses,
+or terminate immediately after a set timeout to ensure connection shutdown. For
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+35
+
+5G GMLC Description
+
+connection termination, the corresponding Network Function request timeout is
+used.
+
+If connection is lost to all configured NRFs, the cache is cleared.
+
+When the validity period expires, the NLG sends the cache refresh request to the
+NRF. Then, the following scenarios decide the next operation on the cache:
+
+— The NRF responds with at least one network function. The response is
+
+compared to the currently cached connections, and the ones that are not
+included in the response are discarded from the cache.
+
+— The NRF responds with an error, and the corresponding network function
+
+cache is cleared gracefully.
+
+— The request towards the NRF times out. For more information about request
+
+timeout, see Request Timeout on page 35.
+
+Note:
+
+Currently running requests are not interrupted by deleting the
+mentioned connections from the cache.
+
+The NFDiscovery result is parsed if the NRF responds with one, and compared
+to the current cache content. The connections included in the response are kept,
+while the connections that are not returned are discarded.
+
+Immediate Cache Clear
+
+If 5G access is disabled, the cache is cleared immediately, without letting the
+ongoing requests wait for their responses from the 5G Core Network Functions.
+
+Cache Features
+
+UDM and AMF caches within the NLG can store connections towards the
+Network Function services in various ways.
+
+UDM Cache Storage Connection Storing Capabilities
+
+— Corresponding UDM instance ID. (This type of UE correlation needs NLG
+
+Network Storage configuration.)
+
+— The GPSI of a UE correlated to a numeric range that determines a group of
+
+serving UDMs.
+
+— The SUPI of a UE correlated to a numeric range that determines a group of
+
+serving UDMs.
+
+Note:
+
+GPSI and SUPI ranges are obtained from the NRF during a periodic
+or an on-demand NFDiscovery that is stored in the UDM cache. If no
+ranges are returned for a UDM instance, that indicates that the specific
+UDM can serve any SUPI or GPSI.
+
+36
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+AMF Cache Storage Connection Storing Capabilities
+
+— Instance ID of the corresponding AMFs
+
+Note:
+
+The NLG obtains the serving AMF service instance ID for a UE from the
+UDM.
+
+Cache Maintenance
+
+If the HTTP2 connection towards a stored NF fails or times out, the NF is
+discarded from the cache.
+
+Note:
+
+If a request fails with an HTTP2 response from the NF (for example, 404,
+500), it remains in the cache, as the connection is still valid.
+
+2.3.8
+
+Fallback
+
+In case the 5GS-MT-LR procedure fails due to AMF query timeout or with an
+AMF error code that equals a configured set of error codes, the NLG tries the CS
+positioning if possible.
+
+2.4
+
+Interfaces
+
+The SBIs in the 5GC network use HTTP/2 with JSON as the application layer
+serialization protocol. The 5G GMLC uses the SBIs listed below for control plane
+positioning.
+
+Note:
+
+To maximize the throughput (TPS) on the interfaces, set the max
+concurrent streams parameter to 20 000 on all NRF, UDM, and
+AMF servers. This configuration controls the number of requests and
+responses that can be sent in parallel on one connection.
+
+If the max concurrent streams parameter is set too low, the 5G GMLC
+performance can decrease significantly.
+
+AMF services
+
+The 5G GMLC implements the NF service consumer for the Namf_Location
+service per TS 29.518.
+
+Service Name
+
+Namf_Location
+
+NRF services
+
+Service Operations
+
+Request
+
+Operation Semantics
+
+Request/Response
+
+The 5G GMLC implements the NF service consumer for the Nnrf_NFDiscovery
+service per TS 29.510.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+37
+
+5G GMLC Description
+
+Service Name
+
+Nnrf_NFDiscovery
+
+Nnrf_NFManagement
+
+UDM services
+
+Service Operations
+
+Operation Semantics
+
+Request
+
+Request
+
+Request/Response
+
+Request/Response
+
+The 5G GMLC implements the NF service consumer for the Nudm_UECM service per
+TS 29.503.
+
+Service Name
+
+Nudm_UECM
+
+Service Operations
+
+Request
+
+Operation Semantics
+
+Request/Response
+
+2.5
+
+Supported MLP Error Codes
+
+When an NF node sends a negative response to the GMLC during positioning,
+which makes the positioning unsuccessful, the GMLC tries to map the negative
+reaction to a final MLP error.
+
+This MLP error response is sent back to the LCS client. The mapping is based on
+the following:
+
+— type of the responding NF node
+
+— the HTTP status code
+
+— cause code
+
+When the unique combination of the following is not a supported mapping, the
+final MLP error code is always 6:
+
+— type of the responding NF node
+
+— the HTTP status code
+
+— cause code
+
+The supported MLP 3.2 error codes with the associated mappings are detailed in
+the subsequent sections.
+
+2.5.1
+
+MLP Error 6: POSITIONING METHOD FAILURE
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+AMF
+
+403
+
+500
+
+UNSPECIFIED
+
+POSITIONING_FAILED
+
+38
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Technical Description
+
+2.5.2
+
+MLP Error 501: ROAMING ERROR
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+UDM
+
+403
+
+ROAMING_NOT_ALLOW
+ED
+
+2.5.3
+
+MLP Error 2: UNSPECIFIED ERROR
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+UDM
+
+AMF
+
+SCP
+
+403
+
+422
+
+403
+
+500
+
+INVALID_GUAMI
+
+UNPROCESSABLE_REQ
+UEST
+
+UNAUTHORIZED_REQU
+ESTING_NETWORK
+
+SYSTEM_FAILURE
+
+2.5.4
+
+MLP Error 202: POSITIONING NOT ALLOWED
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+UDM
+
+403
+
+AMF
+
+403
+
+ACCESS_NOT_ALLOWE
+D
+
+DNN_NOT_ALLOWED
+
+REAUTHENTICATION_R
+EQUIRED
+
+POSITIONING_DENIED
+
+2.5.5
+
+MLP Error 4: UNKNOWN SUBSCRIBER
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+UDM
+
+AMF
+
+403
+
+404
+
+403
+
+404
+
+UNKNOWN_5GS_SUBS
+CRIPTION
+
+NO_PS_SUBSCRIPTION
+
+USER_NOT_FOUND
+
+USER_UNKNOWN
+
+CONTEXT_NOT_FOUND
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+39
+
+5G GMLC Description
+
+2.5.6
+
+MLP Error 5: ABSENT SUBSCRIBER
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+UDM
+
+AMF
+
+404
+
+403
+
+504
+
+CONTEXT_NOT_FOUND
+
+DETACHED_USER
+
+UNREACHABLE_USER
+
+2.5.7
+
+MLP Error 1: SYSTEM FAILURE
+
+Responding NF Node
+
+HTTP Status Code
+
+Cause Code(s)
+
+AMF
+
+SCP
+
+504
+
+500
+
+PEER_NOT_RESPONDI
+NG
+
+TARGET_NF_NOT_REAC
+HABLE
+
+SCP_RELATED_PROCES
+SING_FAILURE
+
+40
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Operation and Maintenance
+
+3
+
+3.1
+
+Operation and Maintenance
+
+Events
+
+The NLG supports the following events for the 5G GMLC within the HTTP2
+component:
+
+— TLS Certificate events
+
+— NRF server availability events
+
+Note:
+
+The All NRF servers are unavailable event can affect all
+traffic flows on Dual or Multi setups. The event does not affect
+Single setups, as it causes all traffic interfaces to close on the same
+NLG server where it appeared, and migrates all traffic handling to
+other available NLGs. If all the NLGs are unable to connect to any
+of the configured NRF servers, and 5GS is in use, then complete
+traffic outage is expected for all traffic throughout the cluster. For
+more information on server availability, see Availability in Technical
+Product Description, NLG.
+
+— AMF and UDM connectivity events
+
+— AMF and UDM communication events
+
+For detailed information about the events, see Event Description, NLG.
+
+3.2
+
+Alarms
+
+The NLG supports the following alarms for the 5G GMLC within the HTTP2
+component:
+
+— Network Connection to 5G Core (NRF)
+
+— TLS Related Alarm
+
+— Connection towards AMFs and UDMs
+
+For detailed information about the alarms, see Alarm Descriptions, NLG.
+
+3.3
+
+Statistics
+
+The NLG generates statistics counters for 5G GMLC positioning. The counters
+record the following information:
+
+— The number of successful and unsuccessful queries towards the NRF servers
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+41
+
+5G GMLC Description
+
+— The unsuccessful communication between the NLG node and the AMF and
+
+UDM nodes
+
+For more information, see Statistics Description, NLG.
+
+3.4
+
+Positioning Records
+
+For the 5G GMLC, the NLG supports XML-based positioning records for the
+location requests, including additional elements for the NR network.
+
+Note:
+
+The data types of the location data in the NR network are according to
+3GPP 29.572. These data types are different from other network access
+types.
+
+For more information, see Positioning Record File Description, NLG.
+
+3.5
+
+Configuration Management
+
+The configuration of the 5G GMLC feature includes the following: Component
+Parameters on NLG components.
+
+The 5G GMLC serves only as a client in the 5G Core network, and the interface
+through which it communicates is non-configurable. The route is determined by
+Linux routing table based on the IP address of the desired 5G core node.
+
+For more information, see Parameter List, NLG.
+
+3.6
+
+Feature Activation
+
+The 5G GMLC feature can be enabled and disabled from the Administration
+Portal under the Networking Connection > Mobile Core Network > AMF/UDM.
+The switch is called Access HTTP2.
+
+Note:
+
+If the 5G GMLC feature is disabled, but the NLG attempts to serve 5G
+traffic, it returns error messages to the LCS client.
+
+3.7
+
+Cell Data Management
+
+In the NCGI translation case of the 5G GMLC positioning, the NLG must be aware
+of the geographic location of the NR cells. The NR cell data can be imported from
+an XML file, provisioned through the CLI or the Administration Portal.
+
+For more information, see NR Cell Data File and CLI Description, ENL.
+
+42
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Operation and Maintenance
+
+3.8
+
+License Handling
+
+The following licenses are needed for the 5G GMLC in the NLG:
+
+— To support 5G GMLC commercial positioning, the NLG GMLC Value Package
+
+(VP) license for GMLC must be installed.
+
+— To support 5G GMLC emergency positioning, the NLG Emergency Location
+
+Base Package must be installed.
+
+For more information on licenses, see Technical Product Description, NLG.
+
+3.9
+
+Administration Portal
+
+The Administration Portal provides a web-based interface to manage the 5G
+GMLC feature. It includes the following functions:
+
+— Network settings for the 5G GMLC
+
+— Data management for cell data
+
+— Software management for the 5G GMLC-related components
+
+• HTTPServer
+
+• MLP
+
+• Request Monitor
+
+• Network Storage
+
+• PPRouter
+
+• HTTP2
+
+— System records
+
+• Statistics
+
+• Positioning records
+
+• Billing
+
+— System monitor
+
+• Event Log
+
+• Alarm Log
+
+• Active Alarm List
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+43
+
+5G GMLC Description
+
+For more information, see Administration Portal User Guide for ENL Cloud
+Native, NLG.
+
+3.10
+
+High Availability
+
+The 5G GMLC feature does not support High Availability from the 5G core
+network side, as it acts as a client towards the NFs.
+
+Ingress LCS client traffic is distributed by the load balancer in case of a system
+comprised of two or more NLG servers. For more information, see System
+Administration Guide for ENL Cloud Native, NLG.
+
+3.11
+
+Billing
+
+For the 5G GMLC feature, the billing file is amended with the AMF InstanceId
+(numberAMF) and the 5G network type (NR). For more information, see Billing File
+Description.
+
+44
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+Engineering Guidelines
+
+4
+
+Engineering Guidelines
+
+Ericsson recommends the following engineering guidelines:
+
+The 5G software design is based on the assumption that the product will be
+integrated into the network using the mTLS as mandated by the 3GPP standard.
+This ensures mutual authentication between the network elements, provides
+integrity protection for messages and encrypts the data stream, which may
+contain sensitive data. In this regard, there is no other control built into the ENL
+in case of disabled mTLS.
+
+Disabling mTLS is only recommended after a comprehensive risk analysis, taking
+into account the possible technical and business impacts.
+
+For TLS, Ericsson strongly recommends installing certificates issued by a trusted
+certificate authority (CA) instead of using self-signed certificates. 5G GMLC
+uses three separate CA files to validate nodes it communicates with from the
+5G Core. One for all the NRF, one for all the UDM, and one for all the AMF
+servers. For information on how to install customized certificates, see the Secure
+Communication section in System Administration Guide for ENL Cloud Native,
+NLG.
+
+18/1553-HSC 901 1780 Uen H | 2026-06-12
+
+45
+
+

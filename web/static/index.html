@@ -154,6 +154,9 @@
     <div class="nav-item" onclick="showPage('config-lmf')">
       <span class="nav-icon">📍</span> LMF
     </div>
+    <div class="nav-item" onclick="showPage('config-gmlc')">
+      <span class="nav-icon">🌐</span> GMLC
+    </div>
   </nav>
 
   <main class="main">
@@ -284,6 +287,23 @@
       </div>
     </div>
 
+    <!-- GMLC Config -->
+    <div id="page-config-gmlc" class="page">
+      <h2>GMLC Configuration</h2>
+      <div class="config-sections">
+        <div class="config-card">
+          <h3>🌐 Gateway Mobile Location Centre <span class="badge">GMLC</span></h3>
+          <div class="form-row"><label>GMLC Host / IP</label><input id="gmlc-host" placeholder="e.g. 10.97.66.9"></div>
+          <div class="form-row"><label>GMLC Port</label><input id="gmlc-port" type="number" placeholder="e.g. 81"></div>
+          <p style="font-size:0.78rem;color:#718096;margin-top:12px">AMF uses this address to send NI-LR EventNotify to GMLC.</p>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint">Restart AMF service for changes to take effect</span>
+        <button class="btn btn-primary" onclick="saveSection('gmlc')">💾 Save</button>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -391,6 +411,8 @@ function fillInputs(cfg) {
   set('udm-host', cfg.udm?.host);
   set('udm-port', cfg.udm?.port);
   set('udm-instance_id', cfg.udm?.instance_id);
+  set('gmlc-host', cfg.gmlc?.host);
+  set('gmlc-port', cfg.gmlc?.port);
 }
 
 function getVal(id) {

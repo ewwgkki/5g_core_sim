@@ -14,6 +14,7 @@ DEFAULTS = {
         "instance_id": "F63F4247-CC1F-46BC-A903-52184744F029"
     },
     "lmf": {"host": "127.0.0.1", "port": 9988},
+    "gmlc": {"host": "", "port": 0},
     "udm": {
         "host": "127.0.0.1",
         "port": 5555,

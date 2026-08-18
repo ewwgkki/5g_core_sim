@@ -1,5 +1,16 @@
 # Change History
 
+## [0.5] - 2026-08-18
+
+### Fixed
+- `amf/main.py` — NRF registration services field corrected from `Namf/Nlmf` to `namf-comm/namf-loc` (per 3GPP TS 29.518)
+- `amf/main.py` — Removed incorrect `/nlmf/v1/location/{ue_id}` route (Nlmf is LMF's service, not AMF's)
+- `amf/main.py` — UE context route corrected to `/namf-comm/v1/ue-contexts/{ueContextId}`
+- `amf/api/namf_loc.py` — DetermineLocation request body aligned to 3GPP TS 29.572: added `ueContextId`, `servingNrCellId`, `lcsCorrelationId`, `amfId` fields
+- `amf/api/namf_loc.py` — Added reference comments clarifying NLg (GMLC->AMF) and NLs (AMF->LMF) reference points
+
+---
+
 ## [0.4] - 2026-08-18
 
 ### Added

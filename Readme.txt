@@ -74,8 +74,9 @@ Phase 2 - AMF Checklist:
   [x] Configurable AMF IP/Port, default 127.0.0.1:9999
   [x] Configurable FQDN, registered to NRF
   [x] Configurable LMF address/port (injected into provide-pos request logic)
-  [x] POST /namf-loc/v1/{ueId}/provide-pos-info
-  [x] NRF registration includes Namf and Nlmf in services field
+  [x] NRF registration services field uses correct AMF service names (namf-comm, namf-loc)
+  [x] POST /namf-loc/v1/{ueContextId}/provide-pos-info (NLg: GMLC -> AMF)
+  [x] Forwards DetermineLocation to LMF with correct 3GPP TS 29.572 request fields (NLs: AMF -> LMF)
   [x] Real-time LMF status monitoring (monitor_lmf)
   [x] NRF monitor runs as infinite loop, auto re-registers if NRF restarts
   [ ] /nlmf-loc/... is a stub, not forwarding to real LMF                      (todo)

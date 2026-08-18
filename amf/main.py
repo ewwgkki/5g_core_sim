@@ -10,6 +10,7 @@ from fastapi import FastAPI
 import httpx
 
 from amf.api import namf_loc
+from amf.api import namf_comm
 from amf.api.namf_loc import monitor_lmf
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,8 +33,8 @@ async def register_to_nrf():
         "port": config.AMF_PORT,
         "status": "REGISTERED",
         "services": [
-            {"serviceName": "Namf", "version": "v1"},
-            {"serviceName": "Nlmf", "version": "v1"}
+            {"serviceName": "namf-comm", "version": "v1"},
+            {"serviceName": "namf-loc", "version": "v1"}
         ]
     }
     try:
@@ -87,15 +88,8 @@ app = FastAPI(
 )
 
 app.include_router(namf_loc.router)
+app.include_router(namf_comm.router)
 
-@app.get("/namf/v1/ue-contexts/{ue_id}")
-def get_ue_context(ue_id: str):
-    return {"ueId": ue_id, "status": "active"}
-
-@app.get("/nlmf/v1/location/{ue_id}")
-def get_location(ue_id: str):
-    return {
-        "ueId": ue_id,
-        "location": {"lat": 39.9042, "lon": 116.4074},
-        "source": f"{config.LMF_HOST}:{config.LMF_PORT}"
-    }
+@app.get("/namf-comm/v1/ue-contexts/{ueContextId}")
+def get_ue_context(ueContextId: str):
+    return {"ueContextId": ueContextId, "status": "active"}

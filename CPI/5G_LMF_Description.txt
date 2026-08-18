@@ -1,0 +1,2410 @@
+5G LMF Description
+
+NLS
+
+User Guide
+
+17/1553-HSC 901 1780 Uen G
+
+Copyright
+
+© Ericsson AB 2025, 2026. All rights reserved. No part of this document may be
+reproduced in any form without the written permission of the copyright owner.
+
+Disclaimer
+
+The contents of this document are subject to revision without notice due to
+continued progress in methodology, design and manufacturing. Ericsson shall
+have no liability for any error or damage of any kind resulting from the use of this
+document.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Contents
+
+1
+
+2
+
+2.1
+2.1.1
+
+2.2
+2.2.1
+2.2.2
+2.2.3
+
+2.3
+2.3.1
+2.3.2
+2.3.2.1
+2.3.2.2
+2.3.3
+2.3.3.1
+2.3.3.2
+2.3.4
+2.3.5
+2.3.6
+
+2.4
+
+3
+
+3.1
+
+3.2
+
+3.3
+
+3.4
+
+3.5
+
+3.6
+
+3.7
+
+3.8
+
+3.9
+3.9.1
+
+4
+
+Introduction
+
+Technical Description
+
+LMF Overview
+Feature Overview
+
+LMF Indirect Communication
+Generic 3GPP Indirect Communication Flow
+Basic Indirect Operation Flow Handling
+Error Handling during Indirect Communication
+
+Signaling Procedures
+Procedures for 5G Location Services
+NF Service Framework Procedures
+NfType-Based AMF Monitoring
+NfInstanceId-Based AMF Monitoring
+UBP 5G Signaling Procedures
+A-GNSS with UBP over LPPe
+A-GNSS with Multiple UBP over LPPe
+Altitude Selection
+Civic Address over LPPe Signaling Procedure
+NR ECID Positioning Procedure
+
+Interfaces
+
+Operation and Maintenance
+
+Alarms
+
+Statistics
+
+Positioning Records
+
+Configuration Management
+
+Cell Data Management
+
+License Handling
+
+Administration Portal
+
+High Availability
+
+5G LMF Proxy Service
+Load Balancing with 5G LMF Proxy Service
+
+Engineering Guidelines
+
+Contents
+
+1
+
+2
+
+2
+5
+
+10
+12
+15
+20
+
+26
+26
+28
+32
+34
+36
+36
+37
+39
+40
+41
+
+42
+
+45
+
+45
+
+45
+
+45
+
+46
+
+46
+
+46
+
+47
+
+48
+
+48
+49
+
+51
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+5G LMF Description
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Introduction
+
+1
+
+Introduction
+
+The Location Management Function (LMF) deployed in 5G core (5GC) network
+supports control plane positioning for subscribers in the standalone New Radio
+(NR) network.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+1
+
+5G LMF Description
+
+2
+
+2.1
+
+Technical Description
+
+LMF Overview
+
+The NLS implements the LMF Network Function (NF) defined by 3GPP. This
+section gives an overview of the 3GPP Location Services (LCS) architecture and
+the interfaces related to the LMF.
+
+The 5GC architecture is service-based. The system functionality in Service-Based
+Architecture (SBA) is achieved with a set of NFs that provide service access
+to other authorized NFs. Authorization can be achieved by enabling OAuth 2.0
+support. An NF is a component of the network infrastructure that provides a
+specific functional behavior such as location determination. An NF is made up of
+NF services.
+
+The interactions between NFs are represented in the following ways:
+
+— Reference point representation
+
+— Service-based representation
+
+Figure 1 shows the reference point representation of 5G LCS defined by 3GPP
+TS 23.501, where the interaction between NFs is described by point-to-point
+reference points.
+
+Figure 1    System Architecture in 5GC
+
+The following reference points support LCS in 5GC:
+
+2
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+LeNLhNLgN2LRFAMFGMLCNLsN1External ClientNG-RANUEUDMLMFNLS5G CoreTechnical Description
+
+— N1: Reference point between a UE and AMF through NAS
+
+— N2: Reference point between NG-RAN and AMF
+
+— Le: Reference point between a GMLC and an LCS client
+
+The following reference points are realized by Service-Based Interfaces (SBI):
+
+— NLg: Reference point between a GMLC and AMF
+
+— NLs: Reference point between AMF and LMF
+
+— NLh: Reference point between a GMLC and UDM
+
+Figure 2 The following shows the service-based representation of the 5G LCS
+architecture, where the network functions are interconnected through SBIs.
+
+Figure 2    5G LCS Architecture
+
+System Architecture inThe following SBIs are available for LCS:
+
+— Ngmlc: SBI exhibited by GMLC
+
+— Nlmf: SBI exhibited by LMF
+
+— Namf: SBI exhibited by AMF
+
+— Nudm: SBI exhibited by UDM
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+3
+
+LMFSNlmfUDMDNudmNRFSNnrfService Based InterfaceLRFSsdGMLCExternal ClientLeLeAMFSUEgNodeBng-eNodeBNR-UuNG-CNG-CLTE-UuXnNLsNLhNLgNamfNgmlcNnrfNlmSNLsNLgNamfNG RAN5G LMF Description
+
+— Nnrf: SBI exhibited by NRF
+
+The LMF supports the Nlmf_location and the Nlmf_broadcast services.
+
+The Nlmf_location service enables the AMF to request the location of a target
+UE. The Nlmf location service uses the Namf interface provided by the AMF for
+transferring positioning information to the UE or the NG-RAN.
+
+The Nlmf_broadcast service enables the LMF to receive RTK broadcast-related
+feedback (Assistance Information Feedback messages) from the gNodeBs
+through the AMF. The RTK broadcast is not associated with a UE location
+session. The broadcast is used in an AMF to send network assistance data
+to an NG-RAN node. The NG-RAN node broadcasts the assistance data to
+the target UEs. LMF supports AMF in distributing ciphering keys to UEs. UEs
+can decipher RTK broadcast assistance data, ciphered by the LMF, using the
+distributed ciphering keys. The ciphering procedure is not associated with a UE
+location session.
+
+For further information regarding the RTK broadcast feature of the LFM, see the
+related RTK Broadcast document.
+
+The LMF also interacts with the Network Repository Function (NRF) through the
+Nnrf interface for NF service framework functions. The LMF supports sending the
+User-Agent header on the Namf and Nnrf interfaces with a configurable value.
+For more information, see the PPLMF Parameters on Server Level table in the
+section mentioned in the Related Information .
+
+According to the 3GPP standard (3GPP 23.501) communication models, there
+can be direct or indirect communication with external NFs. In the latter case, the
+communication is done through the Service Communication Proxy (SCP). LMF
+is prepared to perform Nlmf_location service-related communication with AMF
+indirectly.
+
+Note:
+
+For indirect communication, LMF supports only model C, not model D.
+
+LMF does not support the delegation of NF producer selection to the
+SCP.
+
+4
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Figure 3    SCP Deployment between NF Producer and NF Consumer
+
+ RELATED INFORMATION 
+
+Parameter List (NLS)
+
+RTK Broadcast
+
+2.1.1
+
+Feature Overview
+
+The NLS implements the LMF entity for the 5G LCS architecture and the
+procedures defined by 3GPP. The LMF entity is co-located on the NLS server and
+shares internal supporting functions with the E-SMLC, the SAS, and the SMLCs.
+The internal supporting functions include the GNSS reference network, database,
+and O&M functions.
+
+The LMF server receives DetermineLocation request messages from the AMF,
+and determines the location of the target UE. For both UE-based and UE-assisted
+positioning methods, the LMF exchanges LPP, LPPe, and NR Positioning Protocol
+A (NRPPa) messages with the target UE through the AMF communication
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+5
+
+5G LMF Description
+
+service. The LMF returns the location estimate in the Location Response
+message.
+
+The LMF supports the following positioning methods:
+
+— Cell ID
+
+— NR ECID (NR Enhanced Cell ID)
+
+• Outdoor Synchronization Signal Reference Signal Received Power (SS-
+
+RSRP) based positioning
+
+•
+
+Indoor Radio Dot System (RDS) precise positioning
+
+— NR AECID (NR Adaptive Enhanced Cell ID)
+
+— UE-assisted A-GNSS
+
+— UE-based A-GNSS
+
+— Uncompensated Barometric Pressure (UBP)
+
+— Device Based Hybrid (DBH)
+
+— Civic Address
+
+The LMF provides the fixed XY data, which overrides the NR cell data during the
+following positionings:
+
+— CID
+
+— NR ECID
+
+— NR AECID
+
+— A-GNSS
+
+For A-GNSS, it is used only as the reference location for assistance data
+calculation.
+
+The LMF supports a flexible positioning method control mechanism based on the
+UE's positioning capabilities, the positioning method control configuration, and
+the parameters included in the Location Request message. For NR positioning,
+the positioning method control mechanism is similar to that in GSM, WCDMA, or
+LTE, with the following differences:
+
+— The configurations of the positioning methods are supported only on global
+
+level.
+
+— The positioning methods are defined as Primary, PrimaryFallback,
+
+PrimaryFallback2, Secondary, SecondaryFallback, and SecondaryFallback2.
+
+— The LMF does not support dual technology and the hybrid methods.
+
+6
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Depending on which positioning method is used to generate the location
+information, the shape of the location estimate is different. The returned shape
+can be configured according to the original shape and client type. The LCS client
+can specify a supported shapes list in the Location Request message. If the
+returned shape is not in the supported shape list, the LMF returns a positioning
+failure message to the AMF.
+
+The LMF can return a location estimate that does not meet the requested
+horizontal accuracy. For NR, this is controlled by the configuration for each LCS
+client type. The LMF can also be configured to perform all available positioning
+methods and to return the location with the best accuracy.
+
+For detailed information, see the Related Information.
+
+The LPP, LPPe, NRPPa information is the following:
+
+— 3GPP LPP is defined in 3GPP 37.355 v15.0.0
+
+— OMA LPPe is defined in OMA-TS-LPPe-V1_0-20150414-C
+
+— NRPPa is defined in 3GPP TS 38.455 v17.2.0
+
+— Access and Mobility Management Services is defined in 3GPP TS 29.518
+
+v16.6.0
+
+— Location Management Services is defined in 3GPP TS 29.572 v16.5.0
+
+— Network Function Authorization is defined in 3GPP TS 29.510 v17.4.0
+
+Cell ID
+
+The Cell ID (CID) is the basic method to determine the user location based
+on the coverage area of the serving cell. When the CID positioning method
+is selected, the LMF queries the cell data in the database to find the cell's
+geography information based on the NR CID included in the Location Request
+message. The accuracy of the CID positioning method depends on the size of
+cell's geographic area. The coverage area of the NR cell can be a polygon or
+ellipse arc, depending on the parameters included in the NR cell data file.
+
+When CID fallback is enabled, CID positioning is performed if all configured
+positioning methods fail
+
+NR ECID
+
+— Outdoor SS-RSRP based positioning:
+
+The NR ECID is a positioning method based on the distance of gNodeB and
+the UE. The positioning method receives a location request and provides
+a position. For NR ECID positioning methods, the LMF exchanges NRPPa
+or LPP messages with the gNodeB or the UE, respectively, through the
+AMF communication service. The LMF returns the location estimate in the
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+7
+
+5G LMF Description
+
+Location Response message. The NR ECID can only be used in 5G Option 2
+environments.
+
+— Indoor RDS precise positioning:
+
+RDS positioning is based on uplink Time Difference of Arrival measurements
+(UTDOA) measured between the UE and the radio DOTs. The positioning
+method receives a location request and provides a position. For RDS
+positioning methods, the LMF exchanges NRPPa messages with the gNodeB
+through the AMF communication service. RDS requires periodic report
+characteristic and Ericsson proprietary extension. The LMF returns the
+location estimate in the location response message.
+
+NR AECID
+
+The NR AECID is a positioning method based on:
+
+— SS Reference Signal Received Power measurements (SS-RSRP) of the
+
+serving and neighbor cells
+
+— Angle of Arrival measurements
+
+— Timing advance measurements
+
+The positioning method receives a location request and provides a position. For
+NR AECID positioning methods, the LMF exchanges NRPPa messages with the
+gNodeB or the UE, respectively, through the AMF communication service. The
+LMF returns the location estimate in the Location Response message. The NR
+AECID can only be used in 5G Option 2 environments.
+
+A-GNSS
+
+The A-GNSS method uses satellite signal measurements retrieved by systems
+such as GPS and GLONASS. This method is a highly accurate positioning
+procedure where the location server, such as the LMF, sends assistance data
+and enhances positioning performance by shortening the Time To First Fix
+(TTFF), thereby increasing receiver sensitivity, reducing power consumption, and
+increasing the accuracy of location calculation.
+
+The LMF supports both UE-assisted A-GNSS and UE-based A-GNSS positioning
+methods using GPS,GLONASS, or both satellite systems. Autonomous GNSS is
+supported as a fallback for UE-based A-GNSS and UE-assisted A-GNSS.
+
+The NR ECID Prefix feature calculates the position by using the NR ECID before
+A-GNSS method in case the A-GNSS is set as Primary and the NR ECID is set as
+Primary fallback.
+
+If the NR ECID Prefix feature is enabled, the LMF schedules the NR ECID before
+AGNSS method and caches the NR ECID result. After that, the LMF executes the
+A-GNSS method.
+
+8
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+If the A-GNSS method is successful, its result is used as the final result, otherwise
+the cached NR ECID result is sent to the AMF.
+
+For information on how to activate or deactivate the NR ECID Prefix feature, see
+EnableECIDPrefixInAGNSS in the PPLMF Parameters on Cluster Level (A-GNSS
+Positioning) table in the section mentioned in the Related Information.
+
+For detailed information about A-GNSS positioning, see AGNSS Positioning
+Technique, ENL.
+
+UBP
+
+The NR UBP solution for LMF is based on LCS-AP and OMA LPPe. LCS-AP
+messages for UBP are transferred between the LMF and AMF over HTTP2.
+If UBP over LPPe is supported, the LMF retrieves sensor capability and
+measurement from the UE over LPPe 1.0, then the LMF returns UBP to the AMF
+in the location response over HTTP2.
+
+DBH
+
+The LMF supports DBH over LPPe. It is processed only with A-GNSS, not as
+a standalone positioning. With the DBH method, the UE generates a location
+estimate from all of its available sources: GNSS, barometric pressure, WLAN, and
+Bluetooth. The NLS receives the DBH location estimate from UE over LPPe, and
+selects either the DBH location estimate or the A-GNSS positioning result, then
+returns it to the AMF.
+
+Civic Address
+
+The LMF supports Civic Address over LPPe. The UE can have the ability to send
+the civic address over the LPPe based on its calculation. The civic address from
+the UE is processed and checked against the DBH over LPPe positioning method
+to make it more reliable.
+
+Note:
+
+Civic address is processed only with A-GNSS and DBH, not as a
+standalone positioning.
+
+Multiple Location Reporting
+
+The LMF supports the Multiple Location Reporting feature. The NLS server
+can request the device to return multiple location reports during an active
+location MT-LR or NI-LR procedure by using a UBP Request or Provide Location
+Information exchange.
+
+Dual-stack Support
+
+The 5G LMF supports IPv4/IPv6 dual-stack communication with the 5G core
+nodes. To enable it, set the enl-5g-proxy.service.externalIPFamilyPolicy
+parameter to PreferDualStack when the 5G LMF Proxy is used. Otherwise, set
+the nls-ts.lmf.service.externalIPFamilyPolicy to PreferDualStack.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+9
+
+5G LMF Description
+
+To check which deployment method will be used, see the 5G LMF Proxy Service
+section in the Related Information.
+
+For more details about the parameters, see the NLS Configuration section in the
+Installation instruction.
+
+In case of multiple NRF settings, the primary, secondary, and tertiary URLs can
+be configured as IPv6 addresses.
+
+In case of AMF, the 5G LMF can communicate on IPv6 during all types of
+positioning, for example, exchanging DetermineLocation messages. AMF cache
+works the same way as with IPv4.
+
+When dual stack is configured, LMF will listen on any interface regardless of IP
+version.
+
+ RELATED INFORMATION 
+
+5G LMF Proxy Service
+
+Positioning Control Data File and CLI Description
+
+5G RDS Positioning Technique
+
+Parameter List, NLS
+
+NLS Configuration, Installation Instruction
+
+2.2
+
+LMF Indirect Communication
+
+Operations
+
+ENL supports indirect communication Model C option 1 and option 2, as
+described below.
+
+Indirect Communication Model C Option 1
+
+In the case of active indirect communication, the nodes of LMF and AMF are
+using the 3gpp-sbi-target-apiRoot header in the request of the following
+operations:
+
+— N1N2MessageTransfer (NLS->AMF) using the Namf_Communication service
+
+— N1MessageNotify (AMF->NLS) using the Namf_Communication service
+
+— N2InfoNotify (AMF->NLS) using the Namf_Communication service
+
+10
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+— DetermineLocation (AMF->NLS) using the Nlmf_Location service
+
+The LMF sends the Server header in an erroneous response for the operations
+above.
+
+In erroneous responses to the LMF, the following cases are possible:
+
+— the AMF or the SCP adds the Server header
+
+— the SCP adds the Via header
+
+Indirect Communication Model C Option 2
+
+If model C option 2 is enabled, in addition to the scenarios of Model C option 1,
+the LMF includes the following headers in the requests for target NF producer
+reselection by the SCP:
+
+— 3gpp-Sbi-Discovery-target-nf-set-id, containing the target NF Set ID
+
+which corresponds to the target NF selected by the NLS
+
+— 3gpp-Sbi-Discovery-target-nf-service-set-id, containing the target
+NF Service Set ID which corresponds to the target NF selected by the NLS
+
+In addition, LMF can parse the 3gpp-Sbi-Producer-Id header if it is present
+in the service response (200, 4XX, 5XX) from the SCP. The content of 3gpp-Sbi-
+Producer-Id is ignored by NLS.
+
+Proxy Provisioning
+
+The address of the SCP nodes available in the network are provisioned in the
+NLS. More SCP instances can be configured. An SCP instance is configured with
+its FQDN, which consists of the following parts:
+
+— scheme
+
+— authority
+
+— API index
+
+Example: https://www.scp.com/a/b/c.
+
+Behavior Model
+
+Dedicated administration state switch has been introduced to enable and disable
+the indirect communication approach (see table PPLMF Parameters on Cluster
+Level (5G Indirect Communication in Parameter List for NLS). NLS performs
+round-robin load share among the SCP instances. NLS maintains single TCP
+session towards every provisioned SCP instance.
+
+Note:
+
+There is no fallback to direct communication if all SCPs fail.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+11
+
+5G LMF Description
+
+NLS supports SCP monitoring functionality using HTTP/2 PING frame with
+configurable interval between consecutive pings.
+
+The communication between NLS and AMF can also be asymmetric ("mixed
+communication cases"), where the parties separately either involve or leave out
+SCP from the message handling.
+
+The communication between LMF and NRF remains direct.
+
+Note:
+
+Some positioning session might require more than one LPP/NRPPa
+(N1/N2) request to the AMF. In this case, LMF uses the same SCP for the
+entire session, unless reselection due to an SCP failure is needed.
+
+If Model C option 2 is enabled and NRF does not send nfSetIdList and
+nfServiceSetIdList during NF Discovery, LMF will fall back to Model
+C option 1.
+
+2.2.1
+
+Generic 3GPP Indirect Communication Flow
+
+Note:
+
+Steps 1-3 and step 7 are done by the NF service consumer.
+
+1. NF target selection based on cache or NF discovery
+
+2. SCP selection from provisioned available SCPs in a round-robin manner
+
+3. Request construction where the target URI is a combination of the SCP
+
+apiRoot and the service provider apiPath.
+
+• Additional headers:
+
+— 3gpp-sbi-target-apiRoot: contains the apiRoot of the service
+
+provider
+
+— Authorization: included if Oauth2 is enabled
+
+•
+
+If the 5G Indirect Communication Model C Option 2 is enabled, the
+service consumer also adds the following additional headers to the
+request along with the headers above:
+
+— 3gpp-Sbi-Discovery-target-nf-set-id contains the target NF
+
+Set ID.
+
+— 3gpp-Sbi-Discovery-target-nf-service-set-id contains the
+
+target NF Service Set ID.
+
+— NF consumer adds this info from the cached nfSetId and
+
+nfServiceSetId received during NF producer discovery, according
+to the conditions below:
+
+•
+
+If the NRF does not send nfSetIdList and
+nfServiceSetIdList during NF Discovery, the service request
+
+12
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+towards SCP will not include the 3gpp-Sbi-Discovery-*
+headers.
+
+If any or both of nfSetIdList and nfServiceSetIdList
+are present along with plmnList configuration (NF Profile
+configuration parameter of HTTP2 component), and if no
+setIds match the PLMN ID configured in plmnList, a fallback
+will happen to Model C Option 1 and the service request will not
+include 3gpp-Sbi-Discovery-* headers.
+
+If plmnList is empty, and if any or both of nfSetIdList and
+nfServiceSetIdList are present in the Discovery response, the
+first entry (setid) from the list will be selected.
+
+If there are multiple setids matching the same PLMN, the
+first matching set id is selected from nfSetIdList and from
+nfServiceSetIdList.
+
+•
+
+•
+
+•
+
+— The 3gpp-Sbi-Discovery-* headers can be used by can be used
+by the SCP to reselect the target NF producer if the NF producer
+instance selected by the NF consumer cannot serve the request.
+
+4. SCP forwarding request to service provider
+
+• Replacing SCP apiRoot with the content of 3gpp-sbi-target-apiRoot
+
+• Removing 3gpp-sbi-target-apiRoot header
+
+5. Response construction in NF Producer
+
+• Addition of Server header in erroneous response
+
+6. SCP forwarding response to service consumer
+
+•
+
+In case of NF producer reselection, the SCP sends the service response
+(200, 4XX, 5XX) to the NF consumer with the 3gpp-Sbi-Producer-Id
+header, which contains any or all of instanceId, serviceInstanceId,
+nfSetId, and nfServiceSetID of the NF producer.
+
+• Addition of Server header in the created erroneous response
+
+Note:
+
+If the response received from the service producer already
+contains a Server header, the SCP copies and forwards that
+header.
+
+• Addition of Via header in the received erroneous response if:
+
+— the SCP received an erroneous response from the service producer
+
+and there was no Server header in it
+
+7. Determining the source of error
+
+• Trying with new SCP if the source was the immediate SCP
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+13
+
+5G LMF Description
+
+At the current state, NLS does not close the serving interface if there is no
+available SCP and the indirect communication mode is configured. As a solution,
+NLS sends every 100th outging request to a randomly selected SCP entry
+from the provisioned SCP list. If the selected SCP successfully dispatches the
+messages, it is considered to be active again in the NLS administration.
+
+14
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+2.2.2
+
+Basic Indirect Operation Flow Handling
+
+NLS Positive Flow
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+15
+
+Figure 4    NLS Positive Flow
+
+5G LMF Description
+
+The flow graph above depicts the location service request procedure, in which the
+NLS is responsible for the following:
+
+— Positioning method selection
+
+— Positioning method procedure control
+
+and where the incoming request is coming through the SCP node on behalf of
+AMF.
+
+1. This step remains direct and the same as in the legacy direct positioning flow
+
+case.
+
+2. This step remains direct and the same as in the legacy direct positioning flow
+
+case.
+
+3. The AMF sends the Nlmf_Location_DetermineLocation request to the NLS
+
+via the proxy node called SCP.
+
+The Nlmf_Location_DetermineLocation request contains an LCS
+Correlation identifier, the serving cell identity of the target UE, and might
+contain the serving AMF instance ID.
+
+NLS determines the positioning method and initiates the NRPPa/LPP flow.
+
+4. This step occurs if the AMF Instance ID is missing from the NF cache. In this
+
+case, NLS updates the cache with the latest information.
+
+5. This step occurs if the OAuth access token is not in the cache, or has expired.
+
+6. NLS is configured for indirect communication:
+
+— NLS selects the SCP from the provisioned ones in a round-robin manner.
+
+— Optional: In case Model C Option 2 is enabled and NLS is able to add the
+discovery parameters to the request, the SCP reselects the target AMF if
+the target AMF instance selected by the NLS cannot serve the request.
+
+— NLS inserts the API root of the request owner AMF in the header of
+
+3gpp-Sbi-Target-apiRoot: <AMF API root>
+
+— SCP notifies the message and replaces the SCP apiRoot with the AMF
+
+apiRoot
+
+— The Namf_Communication_N1N2MessageTransfer request-response
+
+exchange is done in both LPP and NRPPa cases
+
+— Optional: In case of NF producer reselection, the
+
+SCP adds the 3gpp-Sbi-Producer-Id header to the
+Namf_Communication_N1N2MessageTransfer response that it sends to
+the NLS, containing identifiers of the AMF instance selected by the SCP.
+
+7.
+
+If the AMF is also using the SCP:
+
+16
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+— Namf_Communication_N1MessageNotify/
+
+Namf_Communication_N2InfoNotify request-response
+exchange is done via the SCP node in both directions
+
+— According to the normal operation, LMF sends HTTP "204 No Content"
+
+response code
+
+— Optional: more notify/transfer operations depending on the selected
+
+positioning method. NLS uses the same SCP for these until SCP failure.
+
+8. NLS compiles the final location estimate:
+
+• The Nlmf_Location_DetermineLocation response is sent to the SCP
+
+• SCP forwards the message
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+17
+
+5G LMF Description
+
+NLS Positive Flow Mixed Case, NLS is Configured for Direct Communication
+
+Figure 5    NLS Positive Flow Mixed Case, NLS is Configured for Direct
+Communication
+
+— NLS sends indirect answer to indirect Nlmf_Location_DetermineLocation
+
+request.
+
+— NLS (as a request initiator) sends the
+
+Namf_Communication_N1N2MessageTransfer requests directly to the AMF.
+
+— Depending on the source of
+
+the incoming Namf_Communication_N1MessageNotify/
+Namf_Communication_N2InfoNotify request, the response is sent back to
+the same entity.
+
+18
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+NLS Positive Flow Mixed Case, NLS is Configured for Indirect Communication
+
+Figure 6    NLS Positive Flow Mixed Case, NLS is Configured for Indirect
+Communication
+
+— NLS sends direct answer to direct Nlmf_Location_DetermineLocation
+
+request.
+
+— NLS (as a request initiator) sends the
+
+Namf_Communication_N1N2MessageTransfer requests towards the selected
+SCP entity.
+
+— Depending on the source of
+
+the incoming Namf_Communication_N1MessageNotify/
+Namf_Communication_N2InfoNotify request, the response is sent back to
+the same entity.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+19
+
+5G LMF Description
+
+2.2.3
+
+Error Handling during Indirect Communication
+
+LMF Error Handling
+
+The error handling described in this subsection is applicable to the following
+service operations initiated by the AMF:
+
+— Nlmf_Location_DetermineLocation
+
+— Namf_Communication_N1MessageNotify
+
+— Namf_Communication_N2InfoNotify
+
+20
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Figure 7    NLS Negative Flow - Error Handling
+
+Depending on the AMF communication strategy, AMF uses direct or indirect
+communication.
+
+In the case of indirect AMF communication:
+
+— Indirect NLS sends a response stating the problematic LMF instance ID in the
+
+Server header to the same SCP instance.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+21
+
+5G LMF Description
+
+— Direct NLS sends a response to the SCP without the Server header, and SCP
+
+adds a Via header with the SCP FQDN.
+
+In case of direct AMF communication:
+
+— Indirect NLS sends a response stating the problematic NLS instance entity in
+
+the Server header directly to the requestor AMF.
+
+— Direct NLS simply sends a 4xx/5xx response without the Server header,
+
+directly to the requestor AMF .
+
+22
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Producer Error Handling
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Figure 8    NLS Negative Flow - Producer Error
+
+23
+
+5G LMF Description
+
+NLS as a consumer can get notified of producer errors in multiple ways:
+
+— AMF as a producer adds a Server header in the 4xx/5xx responses.
+
+— AMF skips adding the Server header, SCP in this case adds a Via header to
+
+the response, including its own FQDN.
+
+— Neither AMF, nor SCP populate the header set of the 4xx/5xx response.
+
+— SCP returns an 504 Gateway Timeout specifying
+
+TARGET_NF_NOT_REACHABLE as cause and the FQDN of the SCP in the
+Server header.
+
+Note:
+
+In case Model C option 2 is enabled and the SCP is able to reselect the
+target AMF, the NLS is not notified of the original producer error.
+
+24
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+SCP Error during Communication
+
+Figure 9    NLS Negative Flow - SCP Error
+
+NLS is capable of handling the following scenarios:
+
+— No response from the serving SCP
+
+— SCP Namf_Communication_N1N2MessageTransfer response with a 4xx/5xx
+(with the exception of 504, cause= TARGET_NF_NOT_REACHABLE) status
+with the problematic SCP FQDN
+
+— The chosen SCP does not retry forwarding the request to any other SCP
+
+and sends back a 4xx/5xx Namf_Communication_N1N2MessageTransfer
+response with a Server header containing the problematic SCP FQDN.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+25
+
+5G LMF Description
+
+2.3
+
+Signaling Procedures
+
+This section describes the signaling procedures supported by the NLS LMF value
+package.
+
+2.3.1
+
+Procedures for 5G Location Services
+
+Figure 10 illustrates the general positioning procedure in the LMF. This procedure
+is applicable to both emergency positioning (for example, 5GC-NI-LR) and to
+normal requests from an LCS client (for example, 5GC-MT-LR).
+
+Figure 10    General Positioning Procedure in LMF through LPP
+
+26
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+1. Nlmf_Location_DetermineLocationRequest2. Namf_Communication_N1N2MessageTransfer(<ueContextId>, LPP RequestCapabilities)3. Namf_Communication_N1MessageNotify(<ueContextId>, LPP ProvideCapabilities)4. Namf_Communication_N1N2MessageTransfer(<ueContextId>, LPP ProvideAssistanceData)5. Namf_Communication_N1N2MessageTransfer(<ueContextId>, LPP RequestLocationInfo)6. Namf_Communication_N1N2MessageTransfer(<ueContextId>, LPP RequestAssistanceData)7. Namf_Communication_N1N2MessageTransfer(<ueContextId>, LPP ProvideAssistanceData)9. Namf_Communication_N1MessageNotify(<ueContextId>, LPP ProvideLocationInfo)UENG-RANAMFLMFDL NAS TRANSPORT (DL Positioning Message, LPP RC)DL NAS TRANSPORT (UL Positioning Message, LPP PC)DL NAS TRANSPORT (DL Positioning Message, LPP RLI)DL NAS TRANSPORT (DL Positioning Message, LPP PAD)DL NAS TRANSPORT (UL Positioning Message)DL NAS TRANSPORT (UL Positioning Message, LPP RAD)DL NAS TRANSPORT (DL Positioning Message, LPP PAD)10. Location Calculationand result processing8. Location Measurement orLocation Computation11. Nlmf_Location_DetermineLocation Response(loc-estimate)Technical Description
+
+Steps
+
+1. The AMF selects an LMF instance based on an NRF query or the
+
+configuration, and invokes the Nlmf_Location_DetermineLocation service
+operation toward the LMF to request the current location of the UE. The
+service operation includes an LCS correlation identifier, the serving NR CID,
+and the client type. The required QoS and the supported GAD shapes can
+also be included. If OAuth 2.0 is configured, a valid access token must be
+provided in the request header.
+
+The AMF identity must be included if Step 2 to Step 8 are used.
+
+2.
+
+If any LPP-based positioning method (for example, A-GNSS) is enabled, the
+LMF sends the LPP RequestCapabilities message to the UE.
+
+The LMF invokes the Namf_Communication_N1N2MessageTransfer service
+operation toward the AMF to transfer a Downlink Positioning Message
+to the UE, and includes the LPP binary data as the N1 message content.
+The AMF forwards the Downlink Positioning Message to the UE in a
+DOWNLINK NAS TRANSPORT message.
+
+3. The UE returns the LPP ProvideCapabilities message to the LMF with UE
+
+positioning capabilities.
+
+The UE sends back an Uplink Positioning Message to the AMF
+included in a NAS Transport message. Then, the AMF invokes the
+Namf_Communication_N1MessageNotify service operation toward the LMF,
+including the Uplink Positioning Message received from the UE and the
+LCS correlation identifier.
+
+For all LPP messages exchanged between the LMF and the UE, the AMF repeats
+Step 2 and Step 3.
+
+4. The LMF selects the positioning method based on the UE positioning
+
+capabilities, the positioning method configurations, and the parameters
+included in the Location Request message.
+
+If the LMF selects A-GNSS, it generates the default A-GNSS assistance
+data based on the reference location derived from the serving NR CID. The
+LMF then sends the A-GNSS assistance data to the target UE in an LPP
+ProvideAssistanceData message.
+
+5. The LMF sends an LPP RequestLocationInformation message to the UE
+
+to get the A-GNSS measurement data (UE-assisted) or the location estimate
+(UE- based or autonomous).
+
+6. The UE might request more A-GNSS assistance data from the LMF by
+
+sending an LPP RequestAssistanceData message.
+
+7. The LMF delivers the A-GNSS assistance data requested by the UE in an LPP
+
+ProvideAssistanceData message.
+
+Step 6 and Step 7 can be repeated if more A-GNSS assistance data is needed.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+27
+
+5G LMF Description
+
+8. The UE stores the A-GNSS assistance data and performs any positioning
+
+measurements or location computation requested by the LMF.
+
+9. The UE returns an LPP ProvideLocationInformation message to the LMF,
+which includes either A-GNSS measurements (UE-assisted) or a location
+estimate (UE-based).
+
+10. The LMF processes the location information returned from the UE. For the
+UE-assisted A-GNSS method, the LMF calculates a position estimate from
+the measurements.
+
+Based on the positioning method configuration, the LMF might use other
+positioning methods too and select the appropriate location result from the
+available position estimates.
+
+AGNSS is the first performed method with UBP over LPPe.
+
+11. The LMF returns the Nlmf_Location_DetermineLocation service operation
+to the AMF, including the current location of the target UE. The service
+operation includes the location estimate, together with its age and accuracy.
+The service operation can also include information about the positioning
+method.
+
+Note:
+
+For LPP messages, the LMF can both request acknowledgment
+from the UE and respond to the acknowledgment if required by
+the UE. When sending an LPP request to the UE, the LMF requests
+acknowledgment from the UE. When receiving an LPP request
+from the UE, the LMF returns an LPP acknowledgment message
+if acknowledgment is required by the UE.
+
+According to 3GPP 29.572, the location data is given in
+meter and degree. Value of some data types is float. For the
+location result, the LMF by default keeps 9 decimals on floats
+and 17 on doubles. The default value is configurable through
+the LocationDataMaximumDecimals parameter. By default, in
+VelocityEstimate, the LMF keeps one place of decimal on
+hUncertainty and vUncertainty. In LocationData, the LMF
+keeps two places of decimals on altitude.
+
+2.3.2
+
+NF Service Framework Procedures
+
+Figure 11 illustrates how LMF supports the Network Function Service framework
+procedure by interacting with the NRF.
+
+28
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Figure 11    NF Service Framework Procedure
+
+Steps
+
+1. The LMF registers the service.
+
+a. The LMF sends an Nnrf_NFManagement_NFRegister Request
+message to the NRF with its NF profile included when the LMF
+becomes operational for the first time, or in case of a failover.
+
+Note:
+
+The LMF NF profile is generated based on the local NF
+profile template and configuration parameters. For more
+details, see the Related Information.
+
+b. The NRF stores the NF profile of the LMF and marks the NF service
+
+instance available.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+29
+
+AMFNRFLMF1. LMF ServiceRegistration3. LMF ServiceHeartbeat5. LMF ServiceRequest7. AMF ServiceRequest6. AMF ServiceDiscovery4. AMF ServiceDiscovery (all)8. LMF ServiceRe-registrationNnrf_NFManagement_NFRegister_requestNnrf_NFManagement_NFRegister_response2. Access TokenNnrf_AccessToken_requestNnrf_AccessToken_responseNnrf_NFManagement_NFUpdate_requestNnrf_NFManagement_NFUpdate_responseNnrf_NFDiscovery_request (nfInstanceId)Nnrf_NFDiscovery_responseNnrf_NFDiscovery_request (nfInstanceId)Nnrf_NFDiscovery_responseNnrf_NFManagement_NFDeregister_requestNnrf_NFManagement_NFDeregister_responseLMF Service Request (e.g. …/determine-location with AMF ID)ResponseAMF Service Request (e.g. …/namf-comm/v1/{ueContextId)/n1-n2-messages)ResponseOptional5G LMF Description
+
+The NRF might return a heartbeat timer containing the number
+of seconds expected between two consecutive heartbeat messages
+from an NF instance to the NRF.
+
+2. The LMF NF profile is generated based on the local NF profile(Optional)
+
+The LMF requests an access token for the NRF and the AMF services. The
+access token is provided by the NRF with additional information, such as the
+expiration time or the scope. This step can be configured by enabling OAuth
+2.0.
+
+3. The LMF provides the service heartbeat information.
+
+a. The LMF provides the heartbeat of the NF service instance
+
+by periodically sending Nnrf_NFManagement_NFUpdate Request
+messages to the NRF .
+
+b. The NRF acknowledges the Nnrf_NFManagement_NFUpdate
+
+Request message, and accepts it by sending an
+Nnrf_NFManagement_NFUpdate Response message.
+
+4. The LMF sends a discovery request and caches the received addresses.
+
+a. When the LMF starts up, it queries the NRF for all available
+AMF service instances in the network. The LMF invokes the
+Nnrf_NFDiscovery_Request message from the NRF with the
+following values:
+
+— AMF for target-nf-type
+
+— namf-comm for service-names
+
+b. The NRF determines a set of NF instances matching the
+
+Nnrf_NFDiscovery_Request message, and sends the NF profiles of
+the determined NF instances in an Nnrf_NFDiscovery_Response
+message. Each NF profile contains the address of the service
+instance for sending N1/LPP and N2/NRPPa messages, for
+example, ipEndPoints.
+
+c. The LMF caches the addresses of the AMF service instances based
+
+on the discovery result returned by the NRF.
+
+30
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Note: — The validity time of each cache item is set to the
+
+minimum value between the validityPeriod value
+returned from the NRF and the NRF Client Recycle
+Interval parameter. Before the validity time expires,
+the LMF queries the NRF for all AMF instances and
+updates the cache accordingly. The timing of the
+query is the minimum of NRF Default Periodic
+Discovery Interval and validityPeriod minus NRF
+Processing Time. The cache is not removed in case a
+new service discovery to the NRF fails.
+
+— This kind of discovery request is disabled if the AMF
+
+Subscription Switch is set to individual. In this
+case, only the AMF positioning procedure initiates the
+Nnrf_NFDiscovery operation.
+
+5. The AMF sends a location service request to the LMF.
+
+a. The AMF finds the LMF service instance through an NRF query or
+
+the local configuration.
+
+b. The AMF sends an Nlmf_Location_DetermineLocation Request
+message to an LMF instance. This message contains the amfId
+parameter, which is the NF ID of the LMF instance.
+
+6. The AMF initiates an Nnrf_NFDiscovery operation during the positioning
+
+procedure.
+
+a. The LMF needs to get the AMF address to send an LPP message
+to the target UE. The LMF first tries to find the AMF address in
+the local cache using the amfId. If it does not find it there or
+if the validity of the cache item is expired, the LMF invokes an
+Nnrf_NFDiscovery_Request message with the AMF instance ID
+received from the Location Request message.
+
+b. The NRF sends the NF profile of the specified NF instance in an
+Nnrf_NFDiscovery_Response message. The LMF gets the AMF
+service address from the NF profile and updates the cache.
+
+Note:
+
+If the AMF discovery fails or it is not possible, then
+the LMF can take the source IP address from the
+Nlmf_Location_DetermineLocation request and the port value
+defined in the AMF_RestPort configuration parameter to send the
+subsequent LPP/NRPPa requests to. For more details about the
+parameter, see the Related Information.
+
+7. The LMF sends LPP requests to the UE through the AMF.
+
+a. For the Downlink Positioning Message, the LMF
+sends LPP requests to the UE through the AMF
+Namf_Communication_N1N2MessageTransfer service operation
+using the AMF address obtained in Step 6.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+31
+
+5G LMF Description
+
+b. For the Uplink Positioning Message, the AMF gets the LPP
+
+message from the UE and forwards it to the callback address of the
+LMF instance through the Namf_Communication_N1MessageNotify
+service operation.
+
+8. The LMF deregisters the service.
+
+a. When the LMF becomes unavailable, for example, when it is about
+to gracefully shut down or disconnect from the network, the LMF
+sends an Nnrf_NFManagement_NFDeregister_Request message to
+the NRF to inform it of its unavailability.
+
+b. The NRF marks the LMF service instance unavailable. The
+
+NRF acknowledges the Nnrf_NF Deregistration procedure and
+accepts it in an Nnrf_NFManagement_NFDeregister_Response
+message.
+
+ RELATED INFORMATION 
+
+5G LMF Proxy Service
+
+Parameter List, NLS
+
+2.3.2.1
+
+NfType-Based AMF Monitoring
+
+AMF monitoring can be configured as global to trigger an alarm when a
+known AMF status changes to suspended. The global configuration means
+that the LMF creates an NfType-based subscription. This setting is proposed if
+the NRFs are aware of all AMFs so they can notify the user of all changes. In
+this case, after the first successful NfType-based discovery response, if the NRF
+Subscription Switch is set to global, the LMF starts monitoring the AMF statuses
+by subscribing to the NRF for AMF status changes. This means that the LMF
+invokes an Nnrf_NFManagement_NFStatusSubscribe_Request message where
+the NfType is AMF.
+
+32
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Figure 12    NfType-Based AMF Monitoring
+
+Steps
+
+1. The LMF creates an NF Status Subscription.
+
+a. The LMF sends the Nnrf_NFManagement_NFStatusSubscribe
+
+request, which includes the specification to be notified about in case
+of changes regarding the AMF instances.
+
+b. The NRF replies with either an Acknowledgment and all the
+
+subscription-related data including the validity time, or an error
+message upon a failed subscription.
+
+With the NF Status Subscription, the LMF can be notified by the NRF when
+AMF instances are registered or deregistered in the NRF, or when an AMF
+instance profile is modified.
+
+Note:
+
+The subscription can be created on a different NRF, and the
+Location Header of the Acknowledgment contains the URL of the
+subscription created on this NRF. In this case, the rest of the
+communication takes place between the LMF and the NRF where
+the subscription is created.
+
+2. The LMF renews the NF Status Subscription on the NRF before it expires.
+
+a. The LMF sends the Nnrf_NFManagement_NFStatusSubscribe
+
+message to the NRF with an updated validity time.
+
+b. The NRF replies with either an Acknowledgment and all the
+
+subscription-related data including the validity time, or an error
+message upon a failed subscription update. In case an error
+message is returned, the LMF attempts the subscription once more,
+then, after a second failure, it tries to subscribe to the NRF again. If
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+33
+
+Acknowledgment (subscription data)Acknowledgment (empty)Acknowledgment (subscription data)...AMF_status_updateNnrf_NFManagement_NFStatusNotifyNnrf_NFManagement_NFStatusSubscribeAMFNRFLMF1. NF StatusSubscriptionfor AMF typeof NFs2. Renew NF Status Subscriptionfor AMF typeof NFs3. AMF status notification4. AMF unsubscription...Nnrf_NFManagement_NFStatusSubscribeAcknowledgment (empty)Nnrf_NFManagement_NFStatusUnsubscribe...5G LMF Description
+
+the third attempt results in an error message too, the subscription
+update fails.
+
+3. The NRF notifies the LMF for the AMF status change.
+
+a.
+
+If the status of an AMF changes, it sends an AMF_status_update
+message to the NRF.
+
+b. The NRF notifies the LMFs that subscribed for the
+
+status changes of the given AMF by sending them a
+Nnrf_NFManagement_NFStatusNotify message.
+
+c. The LMF replies with an Acknowledgment.
+
+4. The LMF unsubscribes from the AMF status changes.
+
+a. The LMF sends a Nnrf_NFManagement_NFStatusUnsubscribe
+
+message to the NRF.
+
+b. The NRF replies with an Acknowledgment.
+
+2.3.2.2
+
+NfInstanceId-Based AMF Monitoring
+
+AMF monitoring can be configured as individual to trigger an alarm when
+a known AMF status changes to suspended. The individual configuration
+means that the LMF creates an NfInstanceID-based subscription for all
+known AMFs on the active NRF. This setting is proposed in case of a
+hierarchical NRF setup where an NRF is not aware of all AMFs, so subscriptions
+are to be created on the NRF which is aware of the interested AMF.
+In case the AMF starts a positioning session when the NRF Subscription
+Switch is set to individual, the LMF starts monitoring the AMF status by
+subscribing for AMF status changes to the NRF. It means that the LMF
+invokes an Nnrf_NFManagement_NFStatusSubscribe_Request message where
+the NfInstanceId of the current AMF is given as the NfInstanceId.
+
+When the LMF component is gracefully deactivated, it stops monitoring the AMF
+statuses, and unsubscribes from the NRFs.
+
+34
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+Figure 13    NfInstanceId-Based AMF Monitoring
+
+Steps
+
+1. The AMF conducts a positioning procedure with the LMF.
+
+2. The LMF creates an NF Status Subscription.
+
+a. The LMF sends the Nnrf_NFManagement_NFStatusSubscribe
+
+request, which includes the specification to be notified about in case
+of changes regarding that AMF instance.
+
+b. The NRF replies with either an Acknowledgment and all the
+
+subscription-related data including the validity time, or an error
+message upon a failed subscription. If a subscription is created on
+another NRF, then the address of the created resource is present in
+the Location Header.
+
+Note:
+
+It is possible to create the subscription on a different NRF
+and the Location Header of the Acknowledgment contains
+the URL of the subscription created on that NRF. In this
+case, the rest of the communication takes place between
+the LMF and the NRF where the subscription is created.
+
+c.
+
+In case of a failed subscription, the subscription is attempted again
+on the same NRF at first, then on the other configured NRFs.
+
+3. The LMF renews the NF Status Subscription on the NRF before it expires.
+
+a. The LMF selects the earliest expiration time. When it is passed, the
+LMF sends an Nnrf_NFManagement_NFStatusSubscribe message
+to the NRF with an updated validity time.
+
+b. The NRF replies with either an Acknowledgment and all the
+
+subscription-related data including the validity time, or an error
+message upon a failed subscription update. In case an error
+message is returned, the LMF attempts the subscription once more,
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+35
+
+Acknowledgment (subscription data)Acknowledgment (empty)Acknowledgment (subscription data)...AMF_status_updateNnrf_NFManagement_NFStatusNotifyNnrf_NFManagement_NFStatusSubscribePositioningAMFLMFNRFNRF2. NFStatusSubscription3. NF Status Subscription Renewal4. AMF Status Notification1....Nnrf_NFManagement_NFStatusSubscribe5G LMF Description
+
+then after a second failure, it tries to subscribe to the NRF again. If
+the third attempt results in an error message, then the subscription
+update fails.
+
+4. The NRF notifies the LMF of all changes regarding the AMFs. The changes
+
+and how the LMF handles them are the same as in case of NfType-based
+AMF subscriptions.
+
+Note:
+
+In case of an NfInstanceId-based AMF monitoring, the LMF does
+not remove subscriptions.
+
+2.3.3
+
+UBP 5G Signaling Procedures
+
+The following positioning methods are supported for UBP over LPPe:
+
+— UE-A
+
+— UE-B
+
+— UE-A and UE-B
+
+— Standalone
+
+2.3.3.1
+
+A-GNSS with UBP over LPPe
+
+Figure 14    A-GNSS with UBP over LPPe
+
+36
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+LMFAMFUE2. Request Capabilities (Request AGNSS, CID, Sensor Capabilities) 3. Provide Capabilities (Provide AGNSS, CID, Sensor Capabilities) 5. LPP Request Location Information (AGNSS)4. LPP Provide Assistance Data (AGNSS)6. LPPe Request Location Information (Sensor)7. LPPe Provide Location Information (Sensor)8. LPP Provide Location Information (AGNSS)9. Nlmf_Location_DetermineLocation Response1. Nlmf_Location_DetermineLocation RequestTechnical Description
+
+Steps
+
+1. The LMF receives the Nlmf_Location_DetermineLocation Request from
+
+the AMF.
+
+2. The LMF sends the Request Capabilities to the UE through the AMF.
+
+3. The UE returns the Provide Capabilities to the LMF through the AMF.
+The LMF decides the positioning methods. In this case the A-GNSS is
+selected with UBP over LPPe.
+
+4. The LMF sends the LPP Provide Assistance Data (for A-GNSS) to the UE.
+
+5. The LMF sends the LPP Request Location Information (for A-GNSS) to
+
+the UE.
+
+6. The LMF sends the LPPe Request Location Information (for Sensor) to
+
+the UE.
+
+7. The UE returns the LPPe Provide Location Information (for Sensor).
+
+8. The UE returns the LPP Provide Location Information (for A-GNSS).
+
+9. The LMF sends the Nlmf_Location_DetermineLocation Response to the
+
+AMF.
+
+2.3.3.2
+
+A-GNSS with Multiple UBP over LPPe
+
+The A-GNSS with Multiple UBP over LPPe signaling procedure is supported in the
+following cases:
+
+— Multiple location is enabled
+
+— The UE is capable of UBP
+
+— The first LPPe UBP answer arrives before the LPP A-GNSS
+
+— The first LPPe UBP answer contains DBH
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+37
+
+5G LMF Description
+
+Figure 15    A-GNSS with Multiple UBP over LPPe
+
+Steps
+
+1. The AMF sends the Nlmf_Location_DetermineLocation request
+
+message to the LMF.
+
+2. The LMF requests capabilities (LPP and LPPe) from the AMF.
+
+For the LPP, the message contains information related to A-GNSS, DBH or
+Civic Location (CL).
+
+38
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+UEAMFLMFGMLC2. Namf_Communication_N1N2MessageTransfer(LPP RequestCapabilities(A-GNSS, LPPe/Sensor))3. Namf_Communication_N1N2MessageNotify(LPP ProvideCapabilities(A-GNSS, LPPe/Sensor))4. Namf_Communication_N1N2MessageTransfer(LPP ProvideAssistanceData)5. Namf_Communication_N1N2MessageTransfer(LPP RequestLocationInfo(A-GNSS))DL_NAS_TRANSPORT(UI Positioning Message, LPP RC)DL_NAS_TRANSPORT(UI Positioning Message, LPP PC)DL_NAS_TRANSPORT(UI Positioning Message, LPP PAD)6. Namf_Communication_N1N2MessageTransfer(LPPe RequestLocationInfo(Sensor))7. Namf_Communication_N1N2MessageNotify(LPPe ProvideLocationInfo(Sensor measurement, highAccuracy3DPosition))8. Namf_Communication_N1N2MessageTransfer(LPPe RequestLocationInfo(Sensor))9a. Namf_Communication_N1N2MessageNotify(LPPe ProvideLocationInfo(Sensor measurement))DL_NAS_TRANSPORT(UI Positioning Message, LPP RLI)DL_NAS_TRANSPORT(UI Positioning Message, LPPe RLI)DL_NAS_TRANSPORT(UI Positioning Message, LPPe PLI)DL_NAS_TRANSPORT(UI Positioning Message, LPPe RLI)DL_NAS_TRANSPORT(UI Positioning Message, LPPe PLI)UBP and DBH measurementA-GNSS Measurement or Location ComputationUBP measurementloop[DBH and feature is enabled, LPP answer has not arrived, remaining time is enough]alt[succes]opt[LPPe transaction is ongoing]9b. Namf_Communication_N1N2MessageNotify(LPPe Error)DL_NAS_TRANSPORT(UI Positioning Message, LPPe Error)10. Namf_Communication_N1N2MessageNotify(<ueContextId>, LPP ProvideLocationInfo(UE-A A-GNSS measurement or UE-B A-GNSS location estimate))11. Namf_Communication_N1N2MessageTransfer(LPPe Abort)DL_NAS_TRANSPORT(UI Positioning Message, LPP PLI)DL_NAS_TRANSPORT(UI Positioning Message, LPPe Abort)[error][timeout]12. Nlmf_Location DetermineLocation Response(loc-estimate, barometricPressure)Namf_Location ProvidePositioningInfo Response1. Nlmf_Location DetermineLocation RequestNamf_Location ProvidePositioningInfo RequestA-GNSS Location CalculationProcessing the A-GNSS and UBP resultsUE PositioningTechnical Description
+
+For the LPPe, the message contains sensor-related information.
+
+3. The AMF provides capabilities to the LMF (the UE capable of A-GNSS and
+
+the sensor).
+
+4. The LMF sends the LPP ProvideAssistanceData message to the AMF
+
+(A-GNSS AD).
+
+5. The LMF sends the LPP RequestLocationInfo message to the AMF (A-
+
+GNSS/CL).
+
+6. The LMF requests only the LPPe sensor information by sending the LPPe
+
+RequestLocationInfo message.
+
+The LPP response time depends on whether the procedure is executed for
+the first time or it is a repeated procedure.
+
+7. The AMF responds with an LPP/LPPe ProvideLocationInfo message
+
+carrying an External Protocol Data Unit (EPDU) with sensor and optional
+DBH information.
+
+8. The LMF sends an LPPe RequestLocationInfo message to request only
+
+LPPe sensor information.
+
+The LPP response time depends on whether the procedure is executed for
+the first time or it is a repeated procedure.
+
+9. The AMF responds with an LPP/LPPe ProvideLocationInfo message
+
+carrying an EPDU with Sensor and optional DBH information.
+
+If the LPP answer is not arrived and there are enough time, repeat Step 8
+and Step 9 (even in the case of error or timeout).
+
+10. The AMF sends an LPP ProvideLocationInfo message carrying GNSS and
+
+EPDU with DBH information.
+
+11. The LMF aborts any outstanding LPPe procedures for UBP.
+
+The NLS requests acknowledgement of the LPP message, but does not delay
+the completion of later steps if no acknowledgement is received from the
+AMF.
+
+12. The LMF sends the Nlmf_Location_DetermineLocation response
+
+message to the AMF.
+
+2.3.4
+
+Altitude Selection
+
+Altitude selection combines the DBH and the UE-A or UE-B AGNSS location
+estimates, based on vertical uncertainty. If location estimates are available from
+both methods, the location estimate with better horizontal accuracy is returned.
+However, if the location estimate with worse horizontal accuracy positioning
+method provides an altitude with lower vertical uncertainty, then that value
+is returned with the horizontal location estimate. The source of the altitude is
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+39
+
+5G LMF Description
+
+noted in the positioning record. For information on the positioning record, see the
+Related Information.
+
+For information on how to activate or deactivate altitude selection, see the
+PPLMF Parameters on Cluster Level (A-GNSS Positioning) table in the section
+mentioned in the Related Information.
+
+Note:
+
+Altitude selection is used only if the positioning method preference
+parameter values are set to Best Uncertainty. For the parameters,
+see the DBH Parameters for LPPe on LMF (Positioning Procedure) table
+in the section mentioned in the Related Information.
+
+For information about altitude selection-related counters, see the LMF - General
+(Overall) - (Position Method) table in the section mentioned in the Related
+Information.
+
+ RELATED INFORMATION 
+
+PositioningMethodAndUsage, Positioning Record File Description, NLS
+
+1_190 59-HSC 901 1780
+
+DBH for LMF, Parameter List, NLS
+
+General (Overall), Statistics Description, NLS
+
+2.3.5
+
+Civic Address over LPPe Signaling Procedure
+
+The Civic Address over LPPe signaling procedure is supported over LPP and LPPe
+as follows:
+
+— LPPe Request Capabilities for DBH is supported in the LPP Request
+
+Capabilities message for GNSS.
+
+— LPPe Provide Capabilities for DBH and Civic Address is supported in the LPP
+
+Provide Capabilities message for GNSS.
+
+— LPPe Request Location Information for Civic Address is supported in the LPP
+
+Request Location Information message for GNSS.
+
+— LPPe Provide Location Information for DBH and Civic Address is supported
+
+in the LPP Provide Location Information message for GNSS.
+
+For more details, see the Related Information.
+
+40
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+ RELATED INFORMATION 
+
+Signaling Procedure of Civic Address over LPPe in the NR Network, DBH and
+Civic Address Positioning Technique
+
+2.3.6
+
+NR ECID Positioning Procedure
+
+NR ECID is supported over NRPPa in the LMF as follows:
+
+Figure 16    NR E-CID Message Flow
+
+The NR ECID also gathers the Timing Advance Values.
+
+The NR AECID functions similarly to the NR ECID, but gathers the Angle of
+Arrival values besides other values.
+
+Steps
+
+1. The AMF selects an LMF instance based on an NRF query or the
+
+configuration. The AMF invokes the Nlmf_Location_DetermineLocation
+service operation toward the LMF to request the current location of the UE.
+The service operation includes an LCS correlation identifier, the serving NR
+CID, and the client type. The required QoS and the supported GAD shapes
+can also be included.
+
+2. The LMF selects the positioning method based on the positioning method
+configurations and the parameters included in the Location Request
+message. If the LMF selects an NR ECID positioning method, the LMF sends
+an NRPPa Measurement Initiation Request message to the gNodeB through
+the AMF to gather SS-RSRP measurement data from the UE.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+41
+
+1. Nlmf_Location_DetermineLocation Request(LCS correlation id, serving NR CID, client typeQoS, supported GAD shapes)2. Namf_Communication_N1N2MessageTransfer(request for SS-SRSRP measurements)3. Namf_Communication_N2InfoNotify(NR CID and Signal strength ofserving and neighbor cells)5. Nlmf_Location_DetermineLocation Response(Shape with current location estimate, age, accuracy)gNodeBLMF4. PositionCalculationAMFNGAP Downlink UE Associated NRPPa TransportNGAP Uplink UE Associated NRPPa Transport5G LMF Description
+
+3. The AMF returns the NRPPa Measurement Initiation Response message
+
+from the gNodeB to the LMF, which includes the signal strength values of the
+serving and the neighbor cells.
+
+4. The LMF processes the location information returned from the AMF. For the
+NR ECID, the LMF calculates a position estimate from the measurements.
+Based on the positioning method configuration, the LMF might use other
+positioning methods too and select the appropriate location result from the
+available position estimates.
+
+5. The LMF returns the Nlmf_Location_DetermineLocation service operation
+to the AMF, including the current location of the target UE. The service
+operation includes the location estimate together with its age and accuracy.
+The service operation can also include information about the positioning
+method.
+
+2.4
+
+Interfaces
+
+The SBIs in the 5GC network use HTTP/2 with JSON as the application layer
+serialization protocol. The LMF uses the SBIs listed below for control plane
+positioning.
+
+LMF Services
+
+The LMF supports the NF service producer for the Nlmf_Location service per TS
+29.572.
+
+Table 1     SBI for LMF Services
+
+Service Name
+
+Nlmf_ Location
+
+Service Operations
+
+Operation Semantics
+
+DetermineLocation
+
+Request/Response
+
+AMF Services
+
+The LMF implements the NF service consumer for the Namf_Communication
+service per TS 29.518.
+
+Table 2     SBI for AMF Services
+
+Service Name
+
+Service Operations
+
+Operation Semantics
+
+Namf_Communication
+
+N1MessageNotify
+
+Subscribe/Notify
+
+N1N2MessageTransfer
+
+Request/Response
+
+N2InfoNotify
+
+Subscribe/Notify
+
+The LPP message is transported between the LMF and the UE using the
+Namf_Communication service provided by the AMF. HTTP multipart messages
+are used for N1/N2 message transfer, which includes one JSON body part and
+
+42
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Technical Description
+
+one or more binary bodies. The LCS N1 message encodes a 5GS NAS message for
+the LPP type, using the vnd.3gpp.5gnas content type.
+
+Figure 17 shows the protocol stack for LPP transport in the 5GC network.
+
+Figure 17    Protocol Stack for LPP Transport
+
+Figure 18 shows the protocol stack for NRPPa transport in the 5GC network.
+
+Figure 18    Protocol Stack for NRPPa Transport
+
+NRF Services
+
+The LMF implements the NF service consumer for the Nnrf_NFManagement and
+Nnrf_NFDiscovery services per TS 29.510.
+
+Table 3     SBIs for NRF Services
+
+Service Name
+
+Service Operations
+
+Operation Semantics
+
+Nnrf_NFManagement
+
+NFRegister
+
+Request/Response
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+43
+
+NG RANAMFNG-CNLsNR-UuUELMFNGAPSCTPIPL2RRCPDCPRLCMACL1L1PDCPRLCMACL1LPPLPPNASRRCIPL2L1HTTP/2RelayHTTP/2TLSTCPTLSTCPIPNASNGAPSCTPIPL2L2L1L1RelayNRPPaNRPPaNGAPSCTPIPL2L1NG RANNG-CAMFLMFNL1NGAPSCTPIPL2L1HTTP/2TLSTCPIPL2L1HTTP/2TLSTCPIPL2L15G LMF Description
+
+Service Name
+
+Service Operations
+
+Operation Semantics
+
+NFUpdate
+
+NFDeregister
+
+NFStatusSubscribe
+
+Subscribe/Notify
+
+NFStatusNotify
+
+NFStatusUnsubscribe
+
+Nnrf_NFDiscovery
+
+Request
+
+Request/Response
+
+Nnrf_AccessToken
+
+AccessTokenRequest
+
+Request/Response
+
+The LMF supports TLS encryption for security protection at the transport layer
+of SBIs. The LMF supports both server-side and client-side certificates for TLS
+authentication. TLS 1.2 and TLS 1.3 are supported.
+
+44
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Operation and Maintenance
+
+3
+
+3.1
+
+Operation and Maintenance
+
+Alarms
+
+The NLS supports the following alarms for the LMF:
+
+— Internal Communication for LMF
+
+— Network Connection to 5G Core
+
+— License for LMF Value Package
+
+— Other alarms related to positioning methods
+
+For more details about the alarms, see the Related Information.
+
+ RELATED INFORMATION 
+
+Alarm Descriptions, NLS
+
+3.2
+
+Statistics
+
+The NLS generates statistics counters for LMF positioning. The counters record
+the number of location requests from the AMF for different client types and
+positioning methods, the average response time, and so on. In the NLS, many
+statistics counters can be split on system level, cell level, and client type level.
+
+For more details, see the Related Information.
+
+ RELATED INFORMATION 
+
+Statistics Description, NLS
+
+3.3
+
+Positioning Records
+
+For the LMF, the NLS supports XML-based positioning records for the location
+requests, including additional elements for the NR network.
+
+Note:
+
+The data types of the location data in the NR network are according to
+3GPP 29.572. These data types are different from other network access
+types.
+
+For more details, see the Related Information.
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+45
+
+5G LMF Description
+
+ RELATED INFORMATION 
+
+Positioning Record File Description, NLS
+
+3.4
+
+Configuration Management
+
+The configuration of the LMF feature includes the following:
+
+— Component parameters on NLS components
+
+— Positioning control data configuration, for the positioning method selection
+
+and fallback
+
+For more details, see the Related Information.
+
+ RELATED INFORMATION 
+
+Parameter List, NLS
+
+Positioning Control Data File and CLI Description
+
+3.5
+
+Cell Data Management
+
+To use LMF positioning, the NLS must be aware of the geographic location of the
+NR cells. The NR cell data can be imported from an XML file, provisioned through
+CLI or the Administration Portal.
+
+For more details, see the Related Information.
+
+ RELATED INFORMATION 
+
+NR Cell Data File and CLI Description
+
+3.6
+
+License Handling
+
+The following licenses are needed for the LMF in the NLSs:
+
+— To support 5G LMF commercial positioning, the Value Package (VP) licenses
+
+for LMF must be installed. To use A-GNSS positioning method, the VP
+licenses for AGNSS must be installed.
+
+— To support 5G LMF emergency positioning, the regulatory VP licenses for
+
+LMF and NLS Mobile Emergency must be installed in the NLS.
+
+46
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Operation and Maintenance
+
+Note:
+
+The maximum number of NR cells must not exceed the cell quantity of
+the VP licenses for LMF.
+
+For more details on licenses, see the Related Information.
+
+ RELATED INFORMATION 
+
+Technical Product Description, NLS 2.4
+
+3.7
+
+Administration Portal
+
+The Administration Portal provides a web-based interface to manage the LMF
+value package. It includes the following functions:
+
+— Positioning method control for the LMF
+
+— Data management for:
+
+• Cell data
+
+• Cells report
+
+• Fixed Ghost data for the NR network
+
+— Software management for the LMF-related components
+
+— System record
+
+• Statistics
+
+• Positioning record
+
+— System monitor
+
+• GhostAlarm log
+
+• Active Alarm list
+
+For details, see the Related Information.
+
+ RELATED INFORMATION 
+
+Administration Portal User Guide for ENL Cloud Native (NLS)
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+47
+
+5G LMF Description
+
+3.8
+
+High Availability
+
+The NLS supports dual-server cluster configuration for LMF high availability. The
+static application data, the NR cell data, and the positioning control data, for
+example, are stored in a database with redundancy.
+
+The LMF services are active on both NLS servers. The LMF service on each NLS
+server registers an NF instance in the NRF with a different NF instance ID. The
+NRF servers are redundant. The LMF instance sends PING messages to the NRF
+servers, and handles failovers when any of the NRF servers fail. During a failover,
+the LMF instance is registered again to an available NRF server. A missing or
+faulty heartbeat response also results in failover.
+
+During service discovery, the AMF gets multiple LMF NF instances from the NRF.
+The AMF communicates with the selected LMF instances directly and handles
+failovers when any of the LMF servers fail.
+
+3.9
+
+5G LMF Proxy Service
+
+The 5G LMF Proxy can be used as a load balancer service if it is deployed and
+configured as the proxy service. In this case, the following TLS settings depend
+on the configuration of the proxy:
+
+— HTTP/HTTPS used in the service address that is included in the NF profile
+
+— Client connections towards the AMF
+
+If the 5G LMF Proxy service is enabled, multiple LMF Pod instances are
+supported.
+
+Deploying the proxy is not mandatory if there is only one LMF TS Pod, or if
+the only used positioning method is CID. Otherwise, the proxy service must be
+configured as the service address of the LMF.
+
+To enable the 5G LMF Proxy service:
+
+Steps
+
+1. Set the value of PROXY_SERVICE_NAME to enl-5g-proxy.
+
+2. Enable TLS by setting the value of useTLS to true under services in the
+
+values.yaml file during the installation.
+
+48
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Operation and Maintenance
+
+Note: — If the enl-5g-proxy Pod is used, TLS can only be configured
+
+during the deployment by using the above method.
+
+— If the 5G LMF Proxy service is not used, and the specified
+
+proxy service is nls-ts-lmf, TLS can also be turned on and
+off runtime by enabling the LMF_Server_TLS_Switch server
+level configuration parameter in Software Management > NLS
+Components > Configuration > PPLMF in the Administration
+Portal.
+
+For more information on setting the value of
+PROXY_SERVICE_NAME, see the section mentioned in the Related
+Information.
+
+— If the deployment is instantiated with the Evolved Virtual
+
+Network Function Manager (EVNFM), then, instead of changing
+the Helm chart, the attributes must be set on the EVNFM GUI
+or in the input values.yaml file. For more information, see the
+Instantiate a VNF section in EVNFM User Guide in the Ericsson
+Orchestrator EVNFM CPI library, version 22.2.3.
+
+3. Set the address of the load balancer service; as described in Load Balancing
+
+with 5G LMF Proxy Service on page 49.
+
+ RELATED INFORMATION 
+
+NLS Configuration, Installation Instruction
+
+3.9.1
+
+Load Balancing with 5G LMF Proxy Service
+
+If the 5G LMF Proxy service is active, then the service acts as a load balancer.
+Sessions are identified by the LCS correlation ID.
+
+The IP address and the port of the proxy service are included in the NF profile
+as the service address. The address can be configured by one of the following
+methods:
+
+— To configure the address during the installation, set the value of
+
+externalAddress to the address of the load balancer in the values.yaml
+file.
+
+— To configure the address runtime, set the value of the Load_Balancer_URL
+
+PPLMF cluster level configuration parameter to the URL of the load balancer
+in Software Management > NLS Components > Configuration > PPLMF in
+the Administration Portal.
+
+When providing the address, the following formats can be used:
+
+— https://IP:port
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+49
+
+5G LMF Description
+
+— http://IP:port
+
+Note: — When setting the address runtime, the PPLMF component must be
+
+restarted so that it can register to the NRF with the new service
+profile and the new address.
+
+— If the deployment is instantiated with the EVNFM, then the
+
+externalAddress to the load balancer must be set during the
+instantiation process of the EVNFM either on the GUI or in the input
+values.yaml file. For more information, see the Instantiate a VNF
+section in EVNFM User Guide in the Ericsson Orchestrator EVNFM
+CPI library, version 22.2.3.
+
+50
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+Engineering Guidelines
+
+4
+
+Engineering Guidelines
+
+In connection with the 5G LMF feature, the following engineering guidelines
+must be considered:
+
+— The 5G software design is based on the assumption that the product
+
+will be integrated into the network using the mTLS as mandated by the
+3GPP standard. This ensures mutual authentication between the network
+elements, provides integrity protection for messages and encrypts the data
+stream, which may contain sensitive data. In this regard, there is no other
+control built into the ENL in case of disabled mTLS.
+
+Disabling mTLS is only recommended after a comprehensive risk analysis,
+taking into account the possible technical and business impacts.
+
+— For TLS, Ericsson strongly recommends installing certificates issued by a
+
+trusted certificate authority (CA) instead of using self-signed certificates. It
+is assumed that the certificates of all AMF instances can be verified using
+the same root certificate. For information on how to install customized
+certificates, see Create and Setup a CA-Signed Certificate section mentioned
+in the Related Information.
+
+— The LMF follows the same design principles as the E-SMLC in the NLS
+
+whenever possible. However, there are the following differences and
+limitations in the current LMF release:
+
+• The positioning method control configuration is supported only on global
+
+level.
+
+• Dual technology and hybrid methods are not supported.
+
+ RELATED INFORMATION 
+
+Create and Setup a CA-Signed Certificate
+
+17/1553-HSC 901 1780 Uen G | 2026-03-27
+
+51
+
+
