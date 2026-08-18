@@ -47,16 +47,24 @@ async def register_to_nrf():
         print(f"{timestamp()} Cannot connect to NRF: {e}")
 
 async def wait_and_register(interval=5):
+    registered = False
     while True:
         try:
             async with httpx.AsyncClient(timeout=2.0) as client:
                 response = await client.get(config.NRF_URI)
                 if response.status_code == 200:
-                    print(f"{timestamp()} NRF is up, registering AMF...")
-                    await register_to_nrf()
-                    return
+                    if not registered:
+                        print(f"{timestamp()} NRF is up, registering AMF...")
+                        await register_to_nrf()
+                        registered = True
+                else:
+                    registered = False
         except httpx.RequestError:
-            print(f"{timestamp()} Waiting for NRF to start...")
+            if registered:
+                print(f"{timestamp()} NRF became unreachable, will re-register when it comes back...")
+            else:
+                print(f"{timestamp()} Waiting for NRF to start...")
+            registered = False
         await asyncio.sleep(interval)
 
 def timestamp():

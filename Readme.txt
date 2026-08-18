@@ -77,7 +77,7 @@ Phase 2 - AMF Checklist:
   [x] POST /namf-loc/v1/{ueId}/provide-pos-info
   [x] NRF registration includes Namf and Nlmf in services field
   [x] Real-time LMF status monitoring (monitor_lmf)
-  [ ] NRF monitor has max retry limit (20 attempts) - should be infinite loop  (bug)
+  [x] NRF monitor runs as infinite loop, auto re-registers if NRF restarts
   [ ] /nlmf-loc/... is a stub, not forwarding to real LMF                      (todo)
   [ ] NRF health check uses GET nf-instances, semantically inaccurate          (todo)
 
