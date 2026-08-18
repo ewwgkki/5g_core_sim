@@ -54,7 +54,7 @@ Phase Status:
 |---------|--------------------------------------------------------------------|-------------|
 | Phase 1 | NRF registration mechanism                                         | Done        |
 | Phase 2 | AMF module (startup registration, NRF monitoring, Namf/Nlmf, LMF) | Mostly done |
-| Phase 3 | UDM module (API interfaces, static/simulated data)                 | Partial     |
+| Phase 3 | UDM module (API interfaces, static/simulated data)                 | Done        |
 | Phase 4 | LMF module (optional)                                              | Not started |
 | Phase 5 | Web control panel (config + service control + status monitoring)   | Done        |
 | Phase 6 | Integration testing, full flow simulation                          | Not started |
@@ -74,12 +74,19 @@ Phase 2 - AMF Checklist:
   [x] Configurable AMF IP/Port, default 127.0.0.1:9999
   [x] Configurable FQDN, registered to NRF
   [x] Configurable LMF address/port (injected into provide-pos request logic)
-  [x] POST /namf-loc/v1/{ueId}/provide-pos-info
-  [x] NRF registration includes Namf and Nlmf in services field
+  [x] NRF registration services field uses correct AMF service names (namf-comm, namf-loc)
+  [x] POST /namf-loc/v1/{ueContextId}/provide-pos-info (NLg: GMLC -> AMF)
+  [x] Forwards DetermineLocation to LMF with correct 3GPP TS 29.572 request fields (NLs: AMF -> LMF)
   [x] Real-time LMF status monitoring (monitor_lmf)
-  [ ] NRF monitor has max retry limit (20 attempts) - should be infinite loop  (bug)
-  [ ] /nlmf-loc/... is a stub, not forwarding to real LMF                      (todo)
+  [x] NRF monitor runs as infinite loop, auto re-registers if NRF restarts
   [ ] NRF health check uses GET nf-instances, semantically inaccurate          (todo)
+  [x] Async LPP session: AMF suspends GMLC request, simulates UE LPP responses
+  [x] POST /namf-comm/v1/{ueContextId}/n1-n2-messages  (LMF -> AMF, Namf_Communication)
+  [x] POST /namf-comm/v1/{ueContextId}/n1-message-notify
+  [x] POST /namf-comm/v1/{ueContextId}/n2-info-notify
+  [x] AMF -> GMLC NI-LR EventNotify (send_event_notify_to_gmlc)
+  [x] GMLC address configurable via config.json and Web GUI
+  [ ] NRPPa simulation (gNodeB SS-RSRP measurement response)                   (todo)
 
 
 Phase 3 - UDM Checklist:
@@ -88,8 +95,11 @@ Phase 3 - UDM Checklist:
   [x] GET /nudm-uecm/v1/msisdn-{number}/registrations/amf-3gpp-access
   [x] GET /nudm-uecm/v1/imei-{imei}/registrations/amf-3gpp-access
   [x] Returns XML format (compatible with GMLC interface)
-  [ ] GET /nudm-ueau/v1/{supi}/security-information (authentication-data)      (not implemented)
-  [ ] GET /nudm-sdm/v1/{supi}/... (subscription-data)                          (not implemented)
+  [x] GET /nudm-ueau/v1/{supi}/security-information (authentication-data)
+  [x] GET /nudm-sdm/v1/{supi}/nssai (network slice subscription data)
+  [x] GET /nudm-sdm/v1/{supi}/am-data (access and mobility subscription data)
+  [x] GET /nudm-sdm/v1/{supi}/smf-select-data (SMF selection data)
+  [x] UDM static data (IMEI, IMSI, AMF info) configurable via config.json
 
 
 Phase 5 - Web GUI Checklist:
@@ -108,11 +118,10 @@ Phase 5 - Web GUI Checklist:
 
 Pending (priority order):
 
-  1. Fix AMF NRF monitor - remove max_attempts, make it an infinite loop
-  2. Implement UDM /nudm-ueau and /nudm-sdm interfaces
-  3. Implement real /nlmf-loc/... forwarding logic
-  4. Phase 4: Implement LMF module
-  5. Phase 6: Integration testing
+  1. Phase 4: Implement LMF module
+  2. Phase 6: Integration testing
+  3. NRF health check uses GET nf-instances, semantically inaccurate (todo)
+  4. NRPPa simulation in AMF (gNodeB measurement response)
 
 
 How to Start:
