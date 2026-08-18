@@ -1,0 +1,35 @@
+UDM requirments:
+
+- UDM 地址和端口要支持可配置。如果没有配置，则用默认 IP: 127.0.0.1, 端口： 5555
+- UDM 每次启动的话去 NRF注册。如果 UDM发现 NRF没有启动，参考 AMF 机制，不断的 monitor NRF. 如果检测到 NRF 启动，则立马进行注册
+- 实现 GMLC-UDM 接口，为 GMLC 的请求返回 AMF的地址
+- UDM 返回的地址为现有的 AMF 地址。UDM 要支持 IMEI 和 MSISDN. 以 MSISDN为例，这是 UDM 收到的请求： http://10.97.66.9:81/nudm-uecm/v1/msisdn-4917210059/registrations/amf-3gpp-access 
+- UDM 返回给GMLC 的 response内容参考下面：
+
+        [13:13:29.747]  <IMEI>
+        [13:13:29.747]  13536832400072431
+        [13:13:29.747]  </IMEI>
+        [13:13:29.747]  <IMSI>
+        [13:13:29.747]  1240801000000059
+        [13:13:29.747]  </IMSI>
+        [13:13:29.747]  <AMF>
+        [13:13:29.747]          <AMFInstanceId>
+        [13:13:29.747]          f430f3a5-00fa-48fd-ad65-5ec01a66fb76
+        [13:13:29.747]          </AMFInstanceId>
+        [13:13:29.747]          <DEREG_CALLBACK_URI>
+        [13:13:29.747]          http://10.97.115.43:8080/callbacks/nudm-uecm/v1/imsi-240801000000059/deregistration-notification
+        [13:13:29.747]          </DEREG_CALLBACK_URI>
+        [13:13:29.747]          <Guami>
+        [13:13:29.747]                  <AmfId>
+        [13:13:29.747]                  010041
+        [13:13:29.747]                  </AmfId>
+        [13:13:29.748]                  <PlmnId>
+        [13:13:29.748]                          <Mcc>
+        [13:13:29.748]                          240
+        [13:13:29.748]                          </Mcc>
+        [13:13:29.748]                          <Mnc>
+        [13:13:29.748]                          80
+        [13:13:29.748]                          </Mnc>
+        [13:13:29.748]                  </PlmnId>
+        [13:13:29.748]          </Guami>
+        [13:13:29.748]  </AMF>

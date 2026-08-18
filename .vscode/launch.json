@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run NRF",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_nrf.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Run AMF",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_amf.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Run UDM",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_udm.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Run Web Console",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_web.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

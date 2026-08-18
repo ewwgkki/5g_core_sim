@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5G Core Sim - Control Panel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a1f2e, #0d1b2a);
+    border-bottom: 1px solid #2d3748;
+    padding: 16px 32px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  header h1 { font-size: 1.25rem; font-weight: 600; color: #63b3ed; }
+  header span { font-size: 0.8rem; color: #718096; }
+
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 57px); }
+
+  .sidebar {
+    background: #141820;
+    border-right: 1px solid #2d3748;
+    padding: 24px 0;
+  }
+  .sidebar-section { padding: 0 16px 8px; font-size: 0.7rem; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 16px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; cursor: pointer; font-size: 0.875rem;
+    color: #a0aec0; transition: all 0.15s; border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: #1a2035; color: #e2e8f0; }
+  .nav-item.active { background: #1a2035; color: #63b3ed; border-left-color: #63b3ed; }
+  .nav-icon { width: 18px; text-align: center; }
+
+  .main { padding: 32px; overflow-y: auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  h2 { font-size: 1.1rem; font-weight: 600; color: #e2e8f0; margin-bottom: 24px; }
+
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .status-card {
+    background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px;
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .status-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent, #4a5568);
+  }
+  .status-card.nrf { --accent: #68d391; }
+  .status-card.amf { --accent: #63b3ed; }
+  .status-card.udm { --accent: #f6ad55; }
+  .status-card.lmf { --accent: #fc8181; }
+
+  .card-name { font-size: 0.75rem; color: #718096; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .card-status { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #4a5568; flex-shrink: 0; }
+  .dot.up { background: #68d391; box-shadow: 0 0 6px #68d391; }
+  .dot.down { background: #fc8181; }
+  .status-text { font-size: 0.875rem; font-weight: 500; }
+  .card-pid { font-size: 0.75rem; color: #4a5568; }
+  .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  .btn {
+    padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 0.8rem; font-weight: 500; transition: all 0.15s;
+  }
+  .btn-start { background: #276749; color: #9ae6b4; }
+  .btn-start:hover { background: #2f855a; }
+  .btn-stop { background: #742a2a; color: #feb2b2; }
+  .btn-stop:hover { background: #9b2c2c; }
+  .btn-primary { background: #2b6cb0; color: #bee3f8; }
+  .btn-primary:hover { background: #2c5282; }
+  .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .config-sections { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .config-card {
+    background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px;
+  }
+  .config-card h3 { font-size: 0.875rem; font-weight: 600; color: #a0aec0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .config-card h3 .badge {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 20px;
+    background: #2d3748; color: #718096;
+  }
+
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 5px; }
+  .form-row input {
+    width: 100%; background: #0f1117; border: 1px solid #2d3748; border-radius: 6px;
+    padding: 8px 12px; color: #e2e8f0; font-size: 0.875rem; outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-row input:focus { border-color: #63b3ed; }
+
+  .save-bar {
+    margin-top: 24px; padding: 16px 20px;
+    background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .save-hint { font-size: 0.8rem; color: #718096; }
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #276749; color: #9ae6b4; padding: 10px 20px;
+    border-radius: 8px; font-size: 0.875rem; opacity: 0;
+    transition: opacity 0.3s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { background: #742a2a; color: #feb2b2; }
+
+  .log-box {
+    background: #0a0d14; border: 1px solid #2d3748; border-radius: 8px;
+    padding: 16px; font-family: 'Courier New', monospace; font-size: 0.78rem;
+    color: #a0aec0; height: 320px; overflow-y: auto; line-height: 1.6;
+  }
+  .log-line.info { color: #63b3ed; }
+  .log-line.ok { color: #68d391; }
+  .log-line.warn { color: #f6ad55; }
+  .log-line.err { color: #fc8181; }
+
+  .refresh-btn { float: right; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:1.4rem">📡</div>
+  <div>
+    <h1>5G Core Sim</h1>
+    <span>Control Panel</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">Monitor</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">🖥</span> Dashboard
+    </div>
+
+    <div class="sidebar-section">Configuration</div>
+    <div class="nav-item" onclick="showPage('config-nrf')">
+      <span class="nav-icon">🗂</span> NRF
+    </div>
+    <div class="nav-item" onclick="showPage('config-amf')">
+      <span class="nav-icon">📶</span> AMF
+    </div>
+    <div class="nav-item" onclick="showPage('config-udm')">
+      <span class="nav-icon">🗄</span> UDM
+    </div>
+    <div class="nav-item" onclick="showPage('config-lmf')">
+      <span class="nav-icon">📍</span> LMF
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- Dashboard -->
+    <div id="page-dashboard" class="page active">
+      <div class="section-header">
+        <h2>Service Status</h2>
+        <button class="btn btn-primary btn-sm refresh-btn" onclick="refreshStatus()">↻ Refresh</button>
+      </div>
+      <div class="status-grid">
+        <div class="status-card nrf" id="card-nrf">
+          <div class="card-name">NRF</div>
+          <div class="card-status"><div class="dot" id="dot-nrf"></div><span class="status-text" id="txt-nrf">Checking...</span></div>
+          <div class="card-pid" id="pid-nrf"></div>
+          <div class="card-actions">
+            <button class="btn btn-start" onclick="startService('nrf')">▶ Start</button>
+            <button class="btn btn-stop" onclick="stopService('nrf')">■ Stop</button>
+          </div>
+        </div>
+        <div class="status-card amf" id="card-amf">
+          <div class="card-name">AMF</div>
+          <div class="card-status"><div class="dot" id="dot-amf"></div><span class="status-text" id="txt-amf">Checking...</span></div>
+          <div class="card-pid" id="pid-amf"></div>
+          <div class="card-actions">
+            <button class="btn btn-start" onclick="startService('amf')">▶ Start</button>
+            <button class="btn btn-stop" onclick="stopService('amf')">■ Stop</button>
+          </div>
+        </div>
+        <div class="status-card udm" id="card-udm">
+          <div class="card-name">UDM</div>
+          <div class="card-status"><div class="dot" id="dot-udm"></div><span class="status-text" id="txt-udm">Checking...</span></div>
+          <div class="card-pid" id="pid-udm"></div>
+          <div class="card-actions">
+            <button class="btn btn-start" onclick="startService('udm')">▶ Start</button>
+            <button class="btn btn-stop" onclick="stopService('udm')">■ Stop</button>
+          </div>
+        </div>
+        <div class="status-card lmf" id="card-lmf">
+          <div class="card-name">LMF</div>
+          <div class="card-status"><div class="dot" id="dot-lmf"></div><span class="status-text" id="txt-lmf">Not implemented</span></div>
+          <div class="card-pid" id="pid-lmf"></div>
+          <div class="card-actions">
+            <button class="btn btn-start" disabled>▶ Start</button>
+            <button class="btn btn-stop" disabled>■ Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:8px">
+        <h2>Event Log</h2>
+      </div>
+      <div class="log-box" id="log-box">
+        <div class="log-line info">[System] Console started, waiting for service status...</div>
+      </div>
+    </div>
+
+    <!-- NRF Config -->
+    <div id="page-config-nrf" class="page">
+      <h2>NRF Configuration</h2>
+      <div class="config-sections">
+        <div class="config-card">
+          <h3>🗂 Network Repository Function <span class="badge">NRF</span></h3>
+          <div class="form-row"><label>Host / IP</label><input id="nrf-host" placeholder="127.0.0.1"></div>
+          <div class="form-row"><label>Port</label><input id="nrf-port" type="number" placeholder="8000"></div>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint">Restart NRF service for changes to take effect</span>
+        <button class="btn btn-primary" onclick="saveSection('nrf')">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- AMF Config -->
+    <div id="page-config-amf" class="page">
+      <h2>AMF Configuration</h2>
+      <div class="config-sections">
+        <div class="config-card">
+          <h3>📶 Access &amp; Mobility Management <span class="badge">AMF</span></h3>
+          <div class="form-row"><label>Host / IP</label><input id="amf-host" placeholder="127.0.0.1"></div>
+          <div class="form-row"><label>Port</label><input id="amf-port" type="number" placeholder="9999"></div>
+          <div class="form-row"><label>FQDN</label><input id="amf-fqdn" placeholder="fe-1.amf.5gc.mnc080.mcc240.3gppnetwork.org"></div>
+          <div class="form-row"><label>Instance ID</label><input id="amf-instance_id" placeholder="F63F4247-..."></div>
+        </div>
+        <div class="config-card">
+          <h3>📍 LMF Connection <span class="badge">LMF</span></h3>
+          <div class="form-row"><label>LMF Host / IP</label><input id="lmf-host" placeholder="127.0.0.1"></div>
+          <div class="form-row"><label>LMF Port</label><input id="lmf-port" type="number" placeholder="9988"></div>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint">Restart AMF service for changes to take effect</span>
+        <button class="btn btn-primary" onclick="saveAmfAndLmf()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- UDM Config -->
+    <div id="page-config-udm" class="page">
+      <h2>UDM Configuration</h2>
+      <div class="config-sections">
+        <div class="config-card">
+          <h3>🗄 Unified Data Management <span class="badge">UDM</span></h3>
+          <div class="form-row"><label>Host / IP</label><input id="udm-host" placeholder="127.0.0.1"></div>
+          <div class="form-row"><label>Port</label><input id="udm-port" type="number" placeholder="5555"></div>
+          <div class="form-row"><label>Instance ID</label><input id="udm-instance_id" placeholder="66909D42-..."></div>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint">Restart UDM service for changes to take effect</span>
+        <button class="btn btn-primary" onclick="saveSection('udm')">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- LMF Config -->
+    <div id="page-config-lmf" class="page">
+      <h2>LMF Configuration</h2>
+      <div class="config-sections">
+        <div class="config-card">
+          <h3>📍 Location Management Function <span class="badge">LMF</span></h3>
+          <div class="form-row"><label>Host / IP</label><input id="lmf2-host" placeholder="127.0.0.1"></div>
+          <div class="form-row"><label>Port</label><input id="lmf2-port" type="number" placeholder="9988"></div>
+          <p style="font-size:0.78rem;color:#718096;margin-top:12px">⚠️ LMF module is not yet implemented. This address is saved for AMF to use.</p>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint">AMF will use this address to connect to LMF</span>
+        <button class="btn btn-primary" onclick="saveLmfFromPage()">💾 Save</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let config = {};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'dashboard') refreshStatus();
+  else loadConfigToForm();
+}
+
+function toast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => el.className = 'toast', 2500);
+}
+
+function log(msg, type = 'info') {
+  const box = document.getElementById('log-box');
+  const line = document.createElement('div');
+  line.className = 'log-line ' + type;
+  const now = new Date().toLocaleTimeString();
+  line.textContent = `[${now}] ${msg}`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+async function refreshStatus() {
+  try {
+    const res = await fetch(`${API}/api/services/status`);
+    const data = await res.json();
+    ['nrf', 'amf', 'udm'].forEach(name => {
+      const s = data[name];
+      const dot = document.getElementById('dot-' + name);
+      const txt = document.getElementById('txt-' + name);
+      const pid = document.getElementById('pid-' + name);
+      const up = s.reachable;
+      dot.className = 'dot ' + (up ? 'up' : 'down');
+      txt.textContent = up ? 'Running' : (s.process === 'running' ? 'Process up / unreachable' : 'Stopped');
+      pid.textContent = s.pid ? `PID: ${s.pid}` : '';
+    });
+  } catch(e) {
+    log('Failed to fetch service status: ' + e.message, 'err');
+  }
+}
+
+async function startService(name) {
+  log(`Starting ${name.toUpperCase()}...`, 'info');
+  try {
+    const res = await fetch(`${API}/api/service/${name}/start`, { method: 'POST' });
+    const data = await res.json();
+    log(data.message, data.ok ? 'ok' : 'warn');
+    toast(data.message, !data.ok);
+    setTimeout(refreshStatus, 1500);
+  } catch(e) {
+    log('Start failed: ' + e.message, 'err');
+    toast('Start failed', true);
+  }
+}
+
+async function stopService(name) {
+  log(`Stopping ${name.toUpperCase()}...`, 'warn');
+  try {
+    const res = await fetch(`${API}/api/service/${name}/stop`, { method: 'POST' });
+    const data = await res.json();
+    log(data.message, data.ok ? 'ok' : 'warn');
+    toast(data.message, !data.ok);
+    setTimeout(refreshStatus, 800);
+  } catch(e) {
+    log('Stop failed: ' + e.message, 'err');
+    toast('Stop failed', true);
+  }
+}
+
+async function loadConfigToForm() {
+  try {
+    const res = await fetch(`${API}/api/config`);
+    config = await res.json();
+    fillInputs(config);
+  } catch(e) {
+    toast('Failed to load config', true);
+  }
+}
+
+function fillInputs(cfg) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  set('nrf-host', cfg.nrf?.host);
+  set('nrf-port', cfg.nrf?.port);
+  set('amf-host', cfg.amf?.host);
+  set('amf-port', cfg.amf?.port);
+  set('amf-fqdn', cfg.amf?.fqdn);
+  set('amf-instance_id', cfg.amf?.instance_id);
+  set('lmf-host', cfg.lmf?.host);
+  set('lmf-port', cfg.lmf?.port);
+  set('lmf2-host', cfg.lmf?.host);
+  set('lmf2-port', cfg.lmf?.port);
+  set('udm-host', cfg.udm?.host);
+  set('udm-port', cfg.udm?.port);
+  set('udm-instance_id', cfg.udm?.instance_id);
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  if (!el) return undefined;
+  return el.type === 'number' ? parseInt(el.value) : el.value;
+}
+
+async function saveSection(section) {
+  const fields = document.querySelectorAll(`[id^="${section}-"]`);
+  const body = {};
+  fields.forEach(el => {
+    const key = el.id.replace(`${section}-`, '');
+    body[key] = el.type === 'number' ? parseInt(el.value) : el.value;
+  });
+  await postConfig({ [section]: body });
+}
+
+async function saveAmfAndLmf() {
+  const body = {
+    amf: {
+      host: getVal('amf-host'),
+      port: getVal('amf-port'),
+      fqdn: getVal('amf-fqdn'),
+      instance_id: getVal('amf-instance_id'),
+    },
+    lmf: {
+      host: getVal('lmf-host'),
+      port: getVal('lmf-port'),
+    }
+  };
+  await postConfig(body);
+}
+
+async function saveLmfFromPage() {
+  const body = { lmf: { host: getVal('lmf2-host'), port: getVal('lmf2-port') } };
+  await postConfig(body);
+}
+
+async function postConfig(body) {
+  try {
+    const res = await fetch(`${API}/api/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      config = data.config;
+      fillInputs(config);
+      toast('Config saved');
+      log('Config updated: ' + JSON.stringify(body), 'ok');
+    } else {
+      toast('Save failed', true);
+    }
+  } catch(e) {
+    toast('Save failed: ' + e.message, true);
+  }
+}
+
+loadConfigToForm();
+refreshStatus();
+setInterval(refreshStatus, 10000);
+</script>
+</body>
+</html>
