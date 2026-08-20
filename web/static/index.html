@@ -406,6 +406,7 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   event.currentTarget.classList.add('active');
   if (name === 'dashboard') refreshStatus();
+  else if (name === 'nrf-registry') loadNrfRegistry();
   else loadConfigToForm();
 }
 
