@@ -32,7 +32,7 @@ def ensure_deps():
             pass
 
     try:
-        import fastapi, uvicorn, httpx
+        import fastapi, uvicorn, httpx, aiofiles
         return
     except ImportError:
         pass
