@@ -51,6 +51,7 @@ def ensure_deps():
         "install",
         "--no-index",
         "--find-links", LIB_DIR,
+        "--no-deps",
         "-r", REQ,
         "--user"
     ])
