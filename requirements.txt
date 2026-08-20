@@ -7,7 +7,8 @@ starlette==0.13.6
 anyio==1.4.0
 h11==0.12.0
 click==7.1.2
-sniffio
+sniffio==1.1.0
+aiocontextvars
 idna
 certifi
 httpcore==0.12.3

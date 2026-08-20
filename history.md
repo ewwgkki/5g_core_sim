@@ -1,4 +1,37 @@
-# Change History
+ethlab55[GMPC24-ICP2501,db1]:/home/ewwgkki/5g_core_sim # python3.6 run_web.py
+Bootstrapped pip from: pip-21.3.1-py3-none-any.whl
+Installing dependencies from lib/ (offline)...
+Looking in links: /home/ewwgkki/5g_core_sim/lib
+Processing ./lib/fastapi-0.63.0-py3-none-any.whl
+Processing ./lib/uvicorn-0.13.4-py3-none-any.whl
+Processing ./lib/httpx-0.16.1-py3-none-any.whl
+Processing ./lib/pydantic-1.7.4-py3-none-any.whl
+Processing ./lib/starlette-0.13.6-py3-none-any.whl
+Processing ./lib/anyio-1.4.0-py3-none-any.whl
+Processing ./lib/h11-0.12.0-py3-none-any.whl
+Processing ./lib/click-7.1.2-py2.py3-none-any.whl
+Processing ./lib/sniffio-1.2.0-py3-none-any.whl
+Processing ./lib/idna-3.10-py3-none-any.whl
+Processing ./lib/certifi-2025.4.26-py3-none-any.whl
+Processing ./lib/httpcore-0.12.3-py3-none-any.whl
+Processing ./lib/rfc3986-1.5.0-py2.py3-none-any.whl
+Processing ./lib/typing_extensions-4.1.1-py3-none-any.whl
+Processing ./lib/dataclasses-0.8-py3-none-any.whl
+Processing ./lib/async_generator-1.10-py3-none-any.whl
+INFO: pip is looking at multiple versions of httpcore to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of click to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of h11 to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of anyio to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of starlette to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of pydantic to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of httpx to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of uvicorn to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of <Python from Requires-Python> to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of fastapi to determine which version is compatible with other requirements. This could take a while.
+ERROR: Could not find a version that satisfies the requirement contextvars>=2.1; python_version < "3.7" (from sniffio) (from versions: none)
+ERROR: No matching distribution found for contextvars>=2.1; python_version < "3.7"
+pip install failed with exit code 1
+ethlab55[GMPC24-ICP2501,db1]:/home/ewwgkki/5g_core_sim # # Change History
 
 ## [0.7] - 2026-08-18
 
