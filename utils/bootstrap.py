@@ -24,6 +24,13 @@ def _inject_pip_whl():
 
 
 def ensure_deps():
+    # Python 3.6: patch contextvars using aiocontextvars backport before any import
+    if sys.version_info < (3, 7):
+        try:
+            import aiocontextvars  # noqa
+        except ImportError:
+            pass
+
     try:
         import fastapi, uvicorn, httpx
         return
@@ -63,6 +70,13 @@ def ensure_deps():
     for path in site.getsitepackages() + [site.getusersitepackages()]:
         if path not in sys.path:
             sys.path.insert(0, path)
+
+    # Python 3.6: patch contextvars using aiocontextvars backport
+    if sys.version_info < (3, 7):
+        try:
+            import aiocontextvars  # noqa - registers contextvars into sys.modules
+        except ImportError:
+            pass
 
 
 def _run_pip(args):

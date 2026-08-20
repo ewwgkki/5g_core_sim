@@ -5,12 +5,11 @@ if sys.version_info < (3, 6):
     raise SystemExit("Python 3.6+ required. Run with: python3.6 run_web.py")
 
 import os
-import subprocess
-
 ROOT = os.path.dirname(os.path.abspath(__file__))
-if ROOT not in __import__('sys').path:
-    __import__('sys').path.insert(0, ROOT)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
+import utils.contextvars_stub  # noqa - must be before any other import on Python 3.6
 from utils.bootstrap import ensure_deps
 ensure_deps()
 
