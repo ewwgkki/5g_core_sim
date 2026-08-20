@@ -31,8 +31,13 @@ def ensure_deps():
         pass
 
     if not os.path.isdir(LIB_DIR):
-        print("lib/ not found, trying PyPI...")
-        _run_pip(["install", "-r", REQ, "--user"])
+        if sys.version_info >= (3, 7):
+            req_online = os.path.join(ROOT, "requirements-online.txt")
+            req_file = req_online if os.path.exists(req_online) else REQ
+        else:
+            req_file = REQ
+        print("lib/ not found, installing from PyPI...")
+        _run_pip(["install", "-r", req_file, "--user"])
         return
 
     # Ensure pip is importable

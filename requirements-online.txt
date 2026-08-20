@@ -1,0 +1,6 @@
+# requirements-online.txt
+# For Python 3.7+ with internet access — installs latest compatible versions
+fastapi
+uvicorn
+httpx
+pydantic<2.0.0
