@@ -7,21 +7,11 @@ if sys.version_info < (3, 6):
 import os
 import subprocess
 
-LIB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib")
+ROOT = os.path.dirname(os.path.abspath(__file__))
+if ROOT not in __import__('sys').path:
+    __import__('sys').path.insert(0, ROOT)
 
-def ensure_deps():
-    try:
-        import fastapi, uvicorn, httpx
-    except ImportError:
-        req = os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.txt")
-        if os.path.isdir(LIB_DIR):
-            print("Installing dependencies from lib/ (offline)...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install",
-                "--no-index", "--find-links", LIB_DIR, "-r", req, "--user"])
-        else:
-            print("Installing dependencies from PyPI...")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", req, "--user"])
-
+from utils.bootstrap import ensure_deps
 ensure_deps()
 
 from utils.path import init_sys_path
