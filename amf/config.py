@@ -19,4 +19,8 @@ LMF_PORT = _lmf.get("port", 9988)
 
 NRF_HOST = _nrf.get("host", "127.0.0.1")
 NRF_PORT = _nrf.get("port", 8000)
-NRF_URI  = f"http://{NRF_HOST}:{NRF_PORT}/nnrf-nfm/v1/nf-instances"
+NRF_HOST = _amf.get("nrf_host") or NRF_HOST
+_amf_nrf_port = _amf.get("nrf_port")
+NRF_PORT = _amf_nrf_port if _amf_nrf_port else NRF_PORT
+NRF_BASE_URI = f"http://{NRF_HOST}:{NRF_PORT}/nnrf-nfm/v1"
+NRF_URI  = f"{NRF_BASE_URI}/nf-instances"

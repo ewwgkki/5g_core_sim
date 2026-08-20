@@ -11,14 +11,18 @@ DEFAULTS = {
         "host": "127.0.0.1",
         "port": 9999,
         "fqdn": "fe-1.amf.5gc.mnc080.mcc240.3gppnetwork.org",
-        "instance_id": "F63F4247-CC1F-46BC-A903-52184744F029"
+        "instance_id": "F63F4247-CC1F-46BC-A903-52184744F029",
+        "nrf_host": "",
+        "nrf_port": 0
     },
     "lmf": {"host": "127.0.0.1", "port": 9988},
     "gmlc": {"host": "", "port": 0},
     "udm": {
         "host": "127.0.0.1",
         "port": 5555,
-        "instance_id": "66909D42-05FE-4F2B-98E2-55B7329A2B40"
+        "instance_id": "66909D42-05FE-4F2B-98E2-55B7329A2B40",
+        "nrf_host": "",
+        "nrf_port": 0
     }
 }
 

@@ -10,6 +10,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from amf import config, session
 
+from typing import Optional
+
 router = APIRouter()
 
 # ── LMF -> AMF: N1N2MessageTransfer ──────────────────────────────────────────
@@ -93,7 +95,7 @@ async def send_event_notify_to_gmlc(notified_pos_info: dict):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _simulate_ue_response(lpp_type: str, ueContextId: str) -> dict | None:
+def _simulate_ue_response(lpp_type: str, ueContextId: str) -> Optional[dict]:
     """Return a simulated UE LPP response based on the incoming LPP message type."""
     if lpp_type == "RequestCapabilities":
         logging.info(f"[{ueContextId}] Simulating UE LPP ProvideCapabilities")

@@ -1,22 +1,29 @@
 # run_amf.py
 # Created by Kai Wang G on 2025-05-21.
-
-from utils.path import init_sys_path
-init_sys_path()
-
-import subprocess
 import sys
+if sys.version_info < (3, 6):
+    raise SystemExit("Python 3.6+ required. Run with: python3.6 run_amf.py")
+
+import os
+import subprocess
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("run_amf")
+LIB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib")
 
-for pkg in ["fastapi", "uvicorn", "httpx"]:
+def ensure_deps():
     try:
-        __import__(pkg)
+        import fastapi, uvicorn, httpx
     except ImportError:
-        print(f"Installing {pkg}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+        req = os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.txt")
+        if os.path.isdir(LIB_DIR):
+            print("Installing dependencies from lib/ (offline)...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install",
+                "--no-index", "--find-links", LIB_DIR, "-r", req, "--user"])
+        else:
+            print("Installing dependencies from PyPI...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", req, "--user"])
+
+ensure_deps()
 
 import uvicorn
 from amf import config
@@ -28,5 +35,5 @@ DEFAULT_PORT = config.AMF_PORT
 if __name__ == "__main__":
     host = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_HOST
     port = int(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_PORT
-    logger.info(f"Starting AMF service: http://{host}:{port}")
+    print("Starting AMF service: http://{}:{}".format(host, port))
     uvicorn.run(app, host=host, port=port)

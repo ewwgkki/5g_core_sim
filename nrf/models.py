@@ -15,6 +15,18 @@ class NFType(str, Enum):
     UDM = "UDM"
     LMF = "LMF"
     GMLC = "GMLC"
+    NRF = "NRF"
+    SMF = "SMF"
+    PCF = "PCF"
+    AUSF = "AUSF"
+    UPF = "UPF"
+    NEF = "NEF"
+    NSSF = "NSSF"
+    BSF = "BSF"
+    CHF = "CHF"
+    SCP = "SCP"
+    SEPP = "SEPP"
+    OTHER = "OTHER"
 
 class NFService(BaseModel):
     serviceName: str
@@ -25,7 +37,8 @@ class NFInstance(BaseModel):
     nfType: NFType
     ipv4Addr: str
     port: int
-    fqdn: Optional[str] = None  # 新增字段，非必填
-    services: List[NFService]
-    status: str  # REGISTERED, ACTIVE, etc.
+    fqdn: Optional[str] = None
+    services: List[NFService] = []
+    status: str = "REGISTERED"
+    registrationTime: Optional[str] = None
 

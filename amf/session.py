@@ -7,9 +7,9 @@ import asyncio
 # {
 #   lcsCorrelationId: {
 #       "event":            asyncio.Event,
-#       "result":           dict | None,
+#       "result":           Optional[dict],
 #       "ueContextId":      str,
 #       "lmf_callback_uri": str,   # LMF's N1MessageNotify callback URI
 #   }
 # }
-pending: dict[str, dict] = {}
+pending = {}

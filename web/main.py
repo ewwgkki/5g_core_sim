@@ -5,6 +5,8 @@ import os
 import signal
 import subprocess
 import sys
+import threading
+from collections import deque
 
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -18,7 +20,15 @@ app = FastAPI(title="5G Core Sim - Web Console")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-_processes: dict[str, subprocess.Popen] = {}
+_processes = {}
+_log_buffer: deque = deque(maxlen=200)  # keep last 200 lines
+
+def _stream_output(name: str, proc: subprocess.Popen):
+    for line in iter(proc.stdout.readline, b''):
+        text = line.decode(errors='replace').rstrip()
+        if text:
+            _log_buffer.append({"service": name.upper(), "msg": text})
+    proc.stdout.close()
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
@@ -83,6 +93,7 @@ def start_service(name: str):
         stderr=subprocess.STDOUT,
     )
     _processes[name] = proc
+    threading.Thread(target=_stream_output, args=(name, proc), daemon=True).start()
     return {"ok": True, "message": f"{name} started (pid={proc.pid})"}
 
 @app.post("/api/service/{name}/stop")
@@ -120,6 +131,21 @@ async def service_status(name: str):
         "reachable": reachable,
         "pid": _processes[name].pid if proc_running else None,
     }
+
+@app.get("/api/logs")
+def get_logs():
+    return list(_log_buffer)
+
+@app.get("/api/nrf/instances")
+async def nrf_instances():
+    cfg = load()
+    url = f"http://{cfg['nrf']['host']}:{cfg['nrf']['port']}/nnrf-nfm/v1/nf-instances"
+    try:
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            resp = await client.get(url)
+            return resp.json()
+    except Exception:
+        return []
 
 @app.get("/api/services/status")
 async def all_services_status():

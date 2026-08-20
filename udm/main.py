@@ -18,41 +18,43 @@ async def register_to_nrf():
         "status": "REGISTERED",
         "ipv4Addr": config.UDM_HOST,
         "port": config.UDM_PORT,
-        "priority": 10,
-        "capacity": 100,
         "services": [
-            {
-                "serviceInstanceId": "nudm-uecm",
-                "serviceName": "nudm-uecm",
-                "version": "v1",
-                "scheme": "http",
-                "status": "REGISTERED",
-                "ipEndPoints": [{"ipv4Addr": config.UDM_HOST, "port": config.UDM_PORT}]
-            }
+            {"serviceName": "nudm-uecm", "version": "v1"},
+            {"serviceName": "nudm-ueau", "version": "v1"},
+            {"serviceName": "nudm-sdm",  "version": "v1"}
         ]
     }
+    url = f"{config.NRF_BASE_URI}/nf-instances/{config.UDM_INSTANCE_ID}"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.post(config.NRF_URI, json=nf_profile)
-            if resp.status_code == 200:
+            resp = await client.put(url, json=nf_profile)
+            if resp.status_code in (200, 201):
                 logging.info("UDM successfully registered to NRF.")
+                return True
             else:
-                logging.warning(f"Failed to register UDM to NRF. Status: {resp.status_code}, Body: {resp.text}")
+                logging.warning(f"Failed to register UDM to NRF: {resp.status_code} {resp.text}")
     except Exception as e:
-        logging.error(f"Exception during UDM registration to NRF: {e}")
+        logging.error(f"Exception during UDM NRF registration: {e}")
+    return False
 
 async def wait_and_register():
-    logging.info("Waiting for NRF to become available...")
+    registered = False
     while True:
         try:
             async with httpx.AsyncClient(timeout=2.0) as client:
                 resp = await client.get(config.NRF_URI)
-                if resp.status_code == 200:
-                    logging.info("NRF is available, registering UDM now...")
-                    await register_to_nrf()
-                    return
+                nrf_up = resp.status_code == 200
         except Exception:
-            logging.info("NRF not reachable yet, retrying in 5 seconds...")
+            nrf_up = False
+
+        if nrf_up:
+            if not registered:
+                logging.info("NRF is available, registering UDM...")
+                registered = await register_to_nrf()
+        else:
+            if registered:
+                logging.info("NRF became unreachable, will re-register when it comes back...")
+            registered = False
         await asyncio.sleep(5)
 
 @asynccontextmanager

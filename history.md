@@ -1,5 +1,55 @@
 # Change History
 
+## [0.7] - 2026-08-18
+
+### Added
+- `lib/` — offline Python wheels for all dependencies (Python 3.6, linux_x86_64), enables air-gapped deployment
+- `run_*.py` — version check at top of each script (Python 3.4 gives clear error message)
+- `run_*.py` — `ensure_deps()` auto-installs from `lib/` if present, falls back to PyPI
+
+### Fixed
+- `run_nrf.py` — removed duplicate `import sys`, removed `reload=True`
+- `run_amf.py` — removed duplicate `import sys`, fixed undefined `logger` reference
+- `run_udm.py` — removed duplicate `import sys`
+- `run_web.py` — removed duplicate `import sys`
+- All `run_*.py` — replaced f-strings in print statements with `.format()` for consistency
+
+### Changed
+- `requirements.txt` — pinned to Python 3.6 compatible versions (fastapi==0.63.0, uvicorn==0.13.4, pydantic==1.7.4, etc.)
+
+---
+
+## [0.6] - 2026-08-18
+
+### Added
+- `nrf/main.py` — `PUT /nnrf-nfm/v1/nf-instances/{nfInstanceId}` (standard 3GPP registration/update)
+- `nrf/main.py` — `DELETE /nnrf-nfm/v1/nf-instances/{nfInstanceId}` (deregistration)
+- `nrf/main.py` — `registrationTime` auto-recorded on first registration
+- `nrf/models.py` — NFType extended: NRF, SMF, PCF, AUSF, UPF, NEF, NSSF, BSF, CHF, SCP, SEPP, OTHER
+- `nrf/models.py` — `services` and `status` now have default values; `registrationTime` field added
+- `web/main.py` — `GET /api/nrf/instances` proxy endpoint
+- `web/main.py` — `GET /api/logs` endpoint; subprocess stdout streamed to in-memory ring buffer (200 lines)
+- `web/main.py` — background thread reads stdout of each started service process
+- `web/static/index.html` — NRF Registry page: table showing all registered NFs with type, instance ID, address, FQDN, services, status, registration time
+- `web/static/index.html` — Event log auto-fetches `/api/logs` every 3s, shows service process output with color coding
+- `amf/config.py`, `udm/config.py` — `nrf_host`/`nrf_port` override fields (per-service NRF address)
+- `web/static/index.html` — AMF and UDM config pages each have NRF override address fields
+- `web/config_store.py` — `amf.nrf_host`, `amf.nrf_port`, `udm.nrf_host`, `udm.nrf_port` default fields
+
+### Changed
+- `nrf/main.py` — registry changed from list to dict (keyed by nfInstanceId)
+- `amf/main.py` — NRF registration changed from POST to PUT; `register_to_nrf` returns bool
+- `udm/main.py` — NRF registration changed from POST to PUT; `wait_and_register` now loops forever (NRF restart recovery); registered all three services (uecm/ueau/sdm)
+- `udm/api/uecm.py` — requested MSISDN/IMEI echoed back in response; other identities from static config; AMF instance ID now read from `amf.instance_id` instead of `static_data`
+- `web/static/index.html` — removed all emoji from UI (nav icons, headers, buttons)
+- `saveAmfAndLmf()` — now includes `nrf_host`/`nrf_port` fields
+- `saveSection()` — `parseInt` NaN now stored as 0 instead of null
+- `amf/config.py`, `udm/config.py` — NRF port override uses explicit `if` check instead of `or` (avoids port=0 false fallback)
+- `nrf/main.py`, `amf/session.py` — removed Python 3.9+ built-in generic type annotations (`dict[...]`)
+- `amf/api/namf_comm.py` — `dict | None` replaced with `Optional[dict]` for Python 3.6 compatibility
+
+---
+
 ## [0.5] - 2026-08-18
 
 ### Fixed

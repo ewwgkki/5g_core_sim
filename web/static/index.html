@@ -127,7 +127,7 @@
 <body>
 
 <header>
-  <div style="font-size:1.4rem">📡</div>
+  <div style="font-size:1.1rem;font-weight:700;color:#63b3ed;letter-spacing:0.05em">5GC</div>
   <div>
     <h1>5G Core Sim</h1>
     <span>Control Panel</span>
@@ -138,28 +138,57 @@
   <nav class="sidebar">
     <div class="sidebar-section">Monitor</div>
     <div class="nav-item active" onclick="showPage('dashboard')">
-      <span class="nav-icon">🖥</span> Dashboard
+      <span class="nav-icon">—</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('nrf-registry')">
+      <span class="nav-icon">—</span> NRF Registry
     </div>
 
     <div class="sidebar-section">Configuration</div>
     <div class="nav-item" onclick="showPage('config-nrf')">
-      <span class="nav-icon">🗂</span> NRF
+      <span class="nav-icon">—</span> NRF
     </div>
     <div class="nav-item" onclick="showPage('config-amf')">
-      <span class="nav-icon">📶</span> AMF
+      <span class="nav-icon">—</span> AMF
     </div>
     <div class="nav-item" onclick="showPage('config-udm')">
-      <span class="nav-icon">🗄</span> UDM
+      <span class="nav-icon">—</span> UDM
     </div>
     <div class="nav-item" onclick="showPage('config-lmf')">
-      <span class="nav-icon">📍</span> LMF
+      <span class="nav-icon">—</span> LMF
     </div>
     <div class="nav-item" onclick="showPage('config-gmlc')">
-      <span class="nav-icon">🌐</span> GMLC
+      <span class="nav-icon">—</span> GMLC
     </div>
   </nav>
 
   <main class="main">
+
+    <!-- NRF Registry -->
+    <div id="page-nrf-registry" class="page">
+      <div class="section-header">
+        <h2>NRF Registry</h2>
+        <button class="btn btn-primary btn-sm" onclick="loadNrfRegistry()">↻ Refresh</button>
+      </div>
+      <div id="nrf-registry-table-wrap">
+        <table id="nrf-registry-table" style="width:100%;border-collapse:collapse;font-size:0.82rem">
+          <thead>
+            <tr style="color:#718096;border-bottom:1px solid #2d3748;text-align:left">
+              <th style="padding:8px 12px">Type</th>
+              <th style="padding:8px 12px">Instance ID</th>
+              <th style="padding:8px 12px">Address</th>
+              <th style="padding:8px 12px">FQDN</th>
+              <th style="padding:8px 12px">Services</th>
+              <th style="padding:8px 12px">Status</th>
+              <th style="padding:8px 12px">Registered</th>
+            </tr>
+          </thead>
+          <tbody id="nrf-registry-body">
+            <tr><td colspan="7" style="padding:16px 12px;color:#4a5568">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- Dashboard -->
     <div id="page-dashboard" class="page active">
@@ -219,14 +248,14 @@
       <h2>NRF Configuration</h2>
       <div class="config-sections">
         <div class="config-card">
-          <h3>🗂 Network Repository Function <span class="badge">NRF</span></h3>
+          <h3>Network Repository Function <span class="badge">NRF</span></h3>
           <div class="form-row"><label>Host / IP</label><input id="nrf-host" placeholder="127.0.0.1"></div>
           <div class="form-row"><label>Port</label><input id="nrf-port" type="number" placeholder="8000"></div>
         </div>
       </div>
       <div class="save-bar">
         <span class="save-hint">Restart NRF service for changes to take effect</span>
-        <button class="btn btn-primary" onclick="saveSection('nrf')">💾 Save</button>
+        <button class="btn btn-primary" onclick="saveSection('nrf')">Save</button>
       </div>
     </div>
 
@@ -235,21 +264,23 @@
       <h2>AMF Configuration</h2>
       <div class="config-sections">
         <div class="config-card">
-          <h3>📶 Access &amp; Mobility Management <span class="badge">AMF</span></h3>
+          <h3>Access &amp; Mobility Management <span class="badge">AMF</span></h3>
           <div class="form-row"><label>Host / IP</label><input id="amf-host" placeholder="127.0.0.1"></div>
           <div class="form-row"><label>Port</label><input id="amf-port" type="number" placeholder="9999"></div>
           <div class="form-row"><label>FQDN</label><input id="amf-fqdn" placeholder="fe-1.amf.5gc.mnc080.mcc240.3gppnetwork.org"></div>
           <div class="form-row"><label>Instance ID</label><input id="amf-instance_id" placeholder="F63F4247-..."></div>
+          <div class="form-row"><label>NRF Host (override, leave blank to use global NRF)</label><input id="amf-nrf_host" placeholder="e.g. 10.0.0.1"></div>
+          <div class="form-row"><label>NRF Port (override)</label><input id="amf-nrf_port" type="number" placeholder="8000"></div>
         </div>
         <div class="config-card">
-          <h3>📍 LMF Connection <span class="badge">LMF</span></h3>
+          <h3>LMF Connection <span class="badge">LMF</span></h3>
           <div class="form-row"><label>LMF Host / IP</label><input id="lmf-host" placeholder="127.0.0.1"></div>
           <div class="form-row"><label>LMF Port</label><input id="lmf-port" type="number" placeholder="9988"></div>
         </div>
       </div>
       <div class="save-bar">
         <span class="save-hint">Restart AMF service for changes to take effect</span>
-        <button class="btn btn-primary" onclick="saveAmfAndLmf()">💾 Save</button>
+        <button class="btn btn-primary" onclick="saveAmfAndLmf()">Save</button>
       </div>
     </div>
 
@@ -258,15 +289,17 @@
       <h2>UDM Configuration</h2>
       <div class="config-sections">
         <div class="config-card">
-          <h3>🗄 Unified Data Management <span class="badge">UDM</span></h3>
+          <h3>Unified Data Management <span class="badge">UDM</span></h3>
           <div class="form-row"><label>Host / IP</label><input id="udm-host" placeholder="127.0.0.1"></div>
           <div class="form-row"><label>Port</label><input id="udm-port" type="number" placeholder="5555"></div>
           <div class="form-row"><label>Instance ID</label><input id="udm-instance_id" placeholder="66909D42-..."></div>
+          <div class="form-row"><label>NRF Host (override, leave blank to use global NRF)</label><input id="udm-nrf_host" placeholder="e.g. 10.0.0.1"></div>
+          <div class="form-row"><label>NRF Port (override)</label><input id="udm-nrf_port" type="number" placeholder="8000"></div>
         </div>
       </div>
       <div class="save-bar">
         <span class="save-hint">Restart UDM service for changes to take effect</span>
-        <button class="btn btn-primary" onclick="saveSection('udm')">💾 Save</button>
+        <button class="btn btn-primary" onclick="saveSection('udm')">Save</button>
       </div>
     </div>
 
@@ -275,15 +308,15 @@
       <h2>LMF Configuration</h2>
       <div class="config-sections">
         <div class="config-card">
-          <h3>📍 Location Management Function <span class="badge">LMF</span></h3>
+          <h3>Location Management Function <span class="badge">LMF</span></h3>
           <div class="form-row"><label>Host / IP</label><input id="lmf2-host" placeholder="127.0.0.1"></div>
           <div class="form-row"><label>Port</label><input id="lmf2-port" type="number" placeholder="9988"></div>
-          <p style="font-size:0.78rem;color:#718096;margin-top:12px">⚠️ LMF module is not yet implemented. This address is saved for AMF to use.</p>
+          <p style="font-size:0.78rem;color:#718096;margin-top:12px">LMF module is not yet implemented. This address is saved for AMF to use.</p>
         </div>
       </div>
       <div class="save-bar">
         <span class="save-hint">AMF will use this address to connect to LMF</span>
-        <button class="btn btn-primary" onclick="saveLmfFromPage()">💾 Save</button>
+        <button class="btn btn-primary" onclick="saveLmfFromPage()">Save</button>
       </div>
     </div>
 
@@ -292,7 +325,7 @@
       <h2>GMLC Configuration</h2>
       <div class="config-sections">
         <div class="config-card">
-          <h3>🌐 Gateway Mobile Location Centre <span class="badge">GMLC</span></h3>
+          <h3>Gateway Mobile Location Centre <span class="badge">GMLC</span></h3>
           <div class="form-row"><label>GMLC Host / IP</label><input id="gmlc-host" placeholder="e.g. 10.97.66.9"></div>
           <div class="form-row"><label>GMLC Port</label><input id="gmlc-port" type="number" placeholder="e.g. 81"></div>
           <p style="font-size:0.78rem;color:#718096;margin-top:12px">AMF uses this address to send NI-LR EventNotify to GMLC.</p>
@@ -300,7 +333,7 @@
       </div>
       <div class="save-bar">
         <span class="save-hint">Restart AMF service for changes to take effect</span>
-        <button class="btn btn-primary" onclick="saveSection('gmlc')">💾 Save</button>
+        <button class="btn btn-primary" onclick="saveSection('gmlc')">Save</button>
       </div>
     </div>
 
@@ -404,6 +437,8 @@ function fillInputs(cfg) {
   set('amf-port', cfg.amf?.port);
   set('amf-fqdn', cfg.amf?.fqdn);
   set('amf-instance_id', cfg.amf?.instance_id);
+  set('amf-nrf_host', cfg.amf?.nrf_host);
+  set('amf-nrf_port', cfg.amf?.nrf_port);
   set('lmf-host', cfg.lmf?.host);
   set('lmf-port', cfg.lmf?.port);
   set('lmf2-host', cfg.lmf?.host);
@@ -411,6 +446,8 @@ function fillInputs(cfg) {
   set('udm-host', cfg.udm?.host);
   set('udm-port', cfg.udm?.port);
   set('udm-instance_id', cfg.udm?.instance_id);
+  set('udm-nrf_host', cfg.udm?.nrf_host);
+  set('udm-nrf_port', cfg.udm?.nrf_port);
   set('gmlc-host', cfg.gmlc?.host);
   set('gmlc-port', cfg.gmlc?.port);
 }
@@ -426,7 +463,12 @@ async function saveSection(section) {
   const body = {};
   fields.forEach(el => {
     const key = el.id.replace(`${section}-`, '');
-    body[key] = el.type === 'number' ? parseInt(el.value) : el.value;
+    if (el.type === 'number') {
+      const v = parseInt(el.value);
+      body[key] = isNaN(v) ? 0 : v;
+    } else {
+      body[key] = el.value;
+    }
   });
   await postConfig({ [section]: body });
 }
@@ -438,6 +480,8 @@ async function saveAmfAndLmf() {
       port: getVal('amf-port'),
       fqdn: getVal('amf-fqdn'),
       instance_id: getVal('amf-instance_id'),
+      nrf_host: getVal('amf-nrf_host'),
+      nrf_port: getVal('amf-nrf_port'),
     },
     lmf: {
       host: getVal('lmf-host'),
@@ -473,9 +517,59 @@ async function postConfig(body) {
   }
 }
 
+async function loadNrfRegistry() {
+  const tbody = document.getElementById('nrf-registry-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="padding:16px 12px;color:#4a5568">Loading...</td></tr>';
+  try {
+    const res = await fetch(`${API}/api/nrf/instances`);
+    const data = await res.json();
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px 12px;color:#4a5568">No NF instances registered.</td></tr>';
+      return;
+    }
+    const typeColors = { AMF:'#63b3ed', UDM:'#f6ad55', LMF:'#fc8181', GMLC:'#b794f4', NRF:'#68d391', SMF:'#76e4f7', PCF:'#fbd38d', OTHER:'#a0aec0' };
+    tbody.innerHTML = data.map(nf => {
+      const color = typeColors[nf.nfType] || '#a0aec0';
+      const services = (nf.services || []).map(s => s.serviceName).join(', ') || '-';
+      const regTime = nf.registrationTime ? nf.registrationTime.replace('T',' ').replace('Z','') : '-';
+      return `<tr style="border-bottom:1px solid #1a2035">
+        <td style="padding:8px 12px"><span style="color:${color};font-weight:600">${nf.nfType}</span></td>
+        <td style="padding:8px 12px;font-family:monospace;font-size:0.75rem;color:#a0aec0">${nf.nfInstanceId}</td>
+        <td style="padding:8px 12px">${nf.ipv4Addr}:${nf.port}</td>
+        <td style="padding:8px 12px;color:#718096">${nf.fqdn || '-'}</td>
+        <td style="padding:8px 12px;color:#718096">${services}</td>
+        <td style="padding:8px 12px"><span style="color:#68d391">${nf.status}</span></td>
+        <td style="padding:8px 12px;color:#718096;font-size:0.75rem">${regTime}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:16px 12px;color:#fc8181">Failed to load: ${e.message}</td></tr>`;
+  }
+}
+
+let _lastLogCount = 0;
+async function fetchServiceLogs() {
+  try {
+    const res = await fetch(`${API}/api/logs`);
+    const data = await res.json();
+    if (data.length > _lastLogCount) {
+      data.slice(_lastLogCount).forEach(entry => {
+        const m = entry.msg.toLowerCase();
+        const type = (m.includes('error') || m.includes('fail')) ? 'err'
+                   : m.includes('warn') ? 'warn'
+                   : (m.includes('registered') || m.includes('success')) ? 'ok'
+                   : 'info';
+        log(`[${entry.service}] ${entry.msg}`, type);
+      });
+      _lastLogCount = data.length;
+    }
+  } catch(e) {}
+}
+
 loadConfigToForm();
 refreshStatus();
 setInterval(refreshStatus, 10000);
+setInterval(fetchServiceLogs, 3000);
 </script>
 </body>
 </html>

@@ -37,15 +37,18 @@ async def register_to_nrf():
             {"serviceName": "namf-loc", "version": "v1"}
         ]
     }
+    url = f"{config.NRF_BASE_URI}/nf-instances/{config.AMF_INSTANCE_ID}"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.post(config.NRF_URI, json=payload)
-            if response.status_code == 200:
+            response = await client.put(url, json=payload)
+            if response.status_code in (200, 201):
                 print(f"{timestamp()} AMF successfully registered to NRF")
+                return True
             else:
                 print(f"{timestamp()} Registration failed: {response.status_code} - {response.text}")
     except httpx.RequestError as e:
         print(f"{timestamp()} Cannot connect to NRF: {e}")
+    return False
 
 async def wait_and_register(interval=5):
     registered = False
@@ -53,14 +56,15 @@ async def wait_and_register(interval=5):
         try:
             async with httpx.AsyncClient(timeout=2.0) as client:
                 response = await client.get(config.NRF_URI)
-                if response.status_code == 200:
-                    if not registered:
-                        print(f"{timestamp()} NRF is up, registering AMF...")
-                        await register_to_nrf()
-                        registered = True
-                else:
-                    registered = False
+                nrf_up = response.status_code == 200
         except httpx.RequestError:
+            nrf_up = False
+
+        if nrf_up:
+            if not registered:
+                print(f"{timestamp()} NRF is up, registering AMF...")
+                registered = await register_to_nrf()
+        else:
             if registered:
                 print(f"{timestamp()} NRF became unreachable, will re-register when it comes back...")
             else:
