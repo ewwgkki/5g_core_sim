@@ -13,4 +13,5 @@ certifi
 httpcore==0.12.3
 rfc3986
 typing-extensions
+dataclasses
 async-generator
