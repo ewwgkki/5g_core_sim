@@ -1,4 +1,5 @@
 {
+  "tls": false,
   "nrf": {
     "host": "127.0.0.1",
     "port": 8000
@@ -8,6 +9,15 @@
     "port": 4444,
     "fqdn": "fe-1.amf.5gc.mnc080.mcc240.3gppnetwork.org",
     "instance_id": "F63F4247-CC1F-46BC-A903-52184744F029",
+    "mcc": "240",
+    "mnc": "080",
+    "locality": "",
+    "amf_region_id": "FF",
+    "amf_set_id": "001",
+    "amf_id": "FF0001",
+    "tac": "000001",
+    "sst": 1,
+    "sd": "000001",
     "nrf_host": "127.0.0.1",
     "nrf_port": 8000
   },
@@ -23,6 +33,14 @@
     "host": "127.0.0.1",
     "port": 5555,
     "instance_id": "66909D42-05FE-4F2B-98E2-55B7329A2B40",
+    "fqdn": "udm.5gc.mnc080.mcc240.3gppnetwork.org",
+    "mcc": "240",
+    "mnc": "080",
+    "routing_indicator": "0000",
+    "supi_range_start": "240800000000000",
+    "supi_range_end": "240809999999999",
+    "gpsi_range_start": "46700000000",
+    "gpsi_range_end": "46709999999",
     "static_data": {
       "imei": "13536832400072431",
       "imsi": "1240801000000059",

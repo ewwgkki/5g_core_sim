@@ -60,7 +60,7 @@ def get_config():
 def update_config(body: dict):
     current = load()
     for section, values in body.items():
-        if section in current:
+        if isinstance(values, dict) and isinstance(current.get(section), dict):
             current[section].update(values)
         else:
             current[section] = values

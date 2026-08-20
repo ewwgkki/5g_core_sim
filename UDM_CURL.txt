@@ -1,0 +1,65 @@
+curl -X PUT http://127.0.0.1:8888/nnrf-nfm/v1/nf-instances/66909D42-05FE-4F2B-98E2-55B7329A2B40 \
+    -H "Content-Type: application/json" \
+    -d '{
+      "nfInstanceId": "66909D42-05FE-4F2B-98E2-55B7329A2B40",
+      "nfType": "UDM",
+      "nfStatus": "REGISTERED",
+      "ipv4Addresses": ["127.0.0.1"],
+      "fqdn": "udm.5gc.mnc080.mcc240.3gppnetwork.org",
+      "plmnList": [
+        {"mcc": "240", "mnc": "080"}
+      ],
+      "sNssais": [
+        {"sst": 1, "sd": "000001"}
+      ],
+      "udmInfo": {
+        "routingIndicators": ["0000"],
+        "supiRanges": [
+          {"start": "240800000000000", "end": "240809999999999"}
+        ],
+        "gpsiRanges": [
+          {"start": "46700000000", "end": "46709999999"}
+        ]
+      },
+      "nfServices": [
+        {
+          "serviceInstanceId": "nudm-uecm",
+          "serviceName": "nudm-uecm",
+          "scheme": "http",
+          "nfServiceStatus": "REGISTERED",
+          "fqdn": "udm.5gc.mnc080.mcc240.3gppnetwork.org",
+          "ipEndPoints": [
+            {"ipv4Address": "127.0.0.1", "port": 5555, "transport": "TCP"}
+          ],
+          "versions": [
+            {"apiFullVersion": "1.1.0", "apiVersionInUri": "v1"}
+          ]
+        },
+        {
+          "serviceInstanceId": "nudm-sdm",
+          "serviceName": "nudm-sdm",
+          "scheme": "http",
+          "nfServiceStatus": "REGISTERED",
+          "fqdn": "udm.5gc.mnc080.mcc240.3gppnetwork.org",
+          "ipEndPoints": [
+            {"ipv4Address": "127.0.0.1", "port": 5555, "transport": "TCP"}
+          ],
+          "versions": [
+            {"apiFullVersion": "1.0.0", "apiVersionInUri": "v1"}
+          ]
+        },
+        {
+          "serviceInstanceId": "nudm-ueau",
+          "serviceName": "nudm-ueau",
+          "scheme": "http",
+          "nfServiceStatus": "REGISTERED",
+          "fqdn": "udm.5gc.mnc080.mcc240.3gppnetwork.org",
+          "ipEndPoints": [
+            {"ipv4Address": "127.0.0.1", "port": 5555, "transport": "TCP"}
+          ],
+          "versions": [
+            {"apiFullVersion": "1.0.0", "apiVersionInUri": "v1"}
+          ]
+        }
+      ]
+    }'

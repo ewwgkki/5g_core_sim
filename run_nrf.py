@@ -16,7 +16,7 @@ from utils.bootstrap import ensure_deps
 ensure_deps()
 
 from nrf import config
-import uvicorn
+from utils.serve import serve
 
 DEFAULT_HOST = config.NRF_HOST
 DEFAULT_PORT = config.NRF_PORT
@@ -24,5 +24,5 @@ DEFAULT_PORT = config.NRF_PORT
 if __name__ == "__main__":
     host = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_HOST
     port = int(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_PORT
-    print("Starting NRF service: http://{}:{}".format(host, port))
-    uvicorn.run("nrf.main:app", host=host, port=port, reload=False)
+    print("Starting NRF service: https://{}:{}".format(host, port))
+    serve("nrf.main:app", host=host, port=port)

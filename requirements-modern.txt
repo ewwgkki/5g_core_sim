@@ -1,0 +1,9 @@
+# Python 3.8+ - installed from PyPI when lib/ is absent or Python >= 3.8
+fastapi==0.63.0
+pydantic==1.10.21
+uvicorn
+hypercorn
+h2
+httpx
+aiofiles
+starlette==0.13.6

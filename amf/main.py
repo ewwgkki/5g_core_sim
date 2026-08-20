@@ -5,7 +5,6 @@ import importlib.util
 import os
 import asyncio
 from datetime import datetime
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import httpx
 
@@ -28,15 +27,70 @@ async def register_to_nrf():
     payload = {
         "nfInstanceId": config.AMF_INSTANCE_ID,
         "nfType": "AMF",
+        "nfStatus": "REGISTERED",
+        "ipv4Addresses": [config.AMF_HOST],
         "fqdn": config.AMF_FQDN,
-        "ipv4Addr": config.AMF_HOST,
-        "port": config.AMF_PORT,
-        "status": "REGISTERED",
-        "services": [
-            {"serviceName": "namf-comm", "version": "v1"},
-            {"serviceName": "namf-loc", "version": "v1"}
+        "plmnList": [
+            {"mcc": config.AMF_MCC, "mnc": config.AMF_MNC}
+        ],
+        "sNssais": [
+            {"sst": config.AMF_SST, "sd": config.AMF_SD}
+        ],
+        "amfInfo": {
+            "amfRegionId": config.AMF_REGION_ID,
+            "amfSetId": config.AMF_SET_ID,
+            "guamiList": [
+                {
+                    "plmnId": {"mcc": config.AMF_MCC, "mnc": config.AMF_MNC},
+                    "amfId": config.AMF_ID
+                }
+            ],
+            "taiList": [
+                {
+                    "plmnId": {"mcc": config.AMF_MCC, "mnc": config.AMF_MNC},
+                    "tac": config.AMF_TAC
+                }
+            ]
+        },
+        "nfServices": [
+            {
+                "serviceInstanceId": "namf-comm",
+                "serviceName": "namf-comm",
+                "scheme": "http",
+                "nfServiceStatus": "REGISTERED",
+                "fqdn": config.AMF_FQDN,
+                "ipEndPoints": [
+                    {"ipv4Address": config.AMF_HOST, "port": config.AMF_PORT, "transport": "TCP"}
+                ],
+                "versions": [
+                    {"apiFullVersion": "1.0.0", "apiVersionInUri": "v1"}
+                ],
+                "defaultNotificationSubscriptions": [
+                    {
+                        "notificationType": "N1_MESSAGES",
+                        "n1MessageClass": "5GMM",
+                        "callbackUri": "http://{}:{}/callbacks/namf-comm/v1/n1-message-notify".format(
+                            config.AMF_HOST, config.AMF_PORT)
+                    }
+                ]
+            },
+            {
+                "serviceInstanceId": "namf-loc",
+                "serviceName": "namf-loc",
+                "scheme": "http",
+                "nfServiceStatus": "REGISTERED",
+                "fqdn": config.AMF_FQDN,
+                "ipEndPoints": [
+                    {"ipv4Address": config.AMF_HOST, "port": config.AMF_PORT, "transport": "TCP"}
+                ],
+                "versions": [
+                    {"apiFullVersion": "1.0.0", "apiVersionInUri": "v1"}
+                ]
+            }
         ]
     }
+    if config.AMF_LOCALITY:
+        payload["locality"] = config.AMF_LOCALITY
     url = f"{config.NRF_BASE_URI}/nf-instances/{config.AMF_INSTANCE_ID}"
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
@@ -75,21 +129,17 @@ async def wait_and_register(interval=5):
 def timestamp():
     return datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print(f"{timestamp()} AMF service starting...")
-    try:
-        asyncio.create_task(monitor_lmf())
-        asyncio.create_task(wait_and_register())
-    except Exception as e:
-        print(f"{timestamp()} Lifespan error: {e}")
-    yield
-    print(f"{timestamp()} AMF service shutting down...")
+app = FastAPI(title="AMF - Access and Mobility Management Function")
 
-app = FastAPI(
-    title="AMF - Access and Mobility Management Function",
-    lifespan=lifespan
-)
+@app.on_event("startup")
+async def startup():
+    print(f"{timestamp()} AMF service starting...")
+    asyncio.create_task(monitor_lmf())
+    asyncio.create_task(wait_and_register())
+
+@app.on_event("shutdown")
+async def shutdown():
+    print(f"{timestamp()} AMF service shutting down...")
 
 app.include_router(namf_loc.router)
 app.include_router(namf_comm.router)

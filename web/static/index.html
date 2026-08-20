@@ -145,6 +145,9 @@
     </div>
 
     <div class="sidebar-section">Configuration</div>
+    <div class="nav-item" onclick="showPage('config-transport')">
+      <span class="nav-icon">—</span> Transport
+    </div>
     <div class="nav-item" onclick="showPage('config-nrf')">
       <span class="nav-icon">—</span> NRF
     </div>
@@ -178,13 +181,15 @@
               <th style="padding:8px 12px">Instance ID</th>
               <th style="padding:8px 12px">Address</th>
               <th style="padding:8px 12px">FQDN</th>
+              <th style="padding:8px 12px">PLMN</th>
+              <th style="padding:8px 12px">NF Info</th>
               <th style="padding:8px 12px">Services</th>
               <th style="padding:8px 12px">Status</th>
               <th style="padding:8px 12px">Registered</th>
             </tr>
           </thead>
           <tbody id="nrf-registry-body">
-            <tr><td colspan="7" style="padding:16px 12px;color:#4a5568">Loading...</td></tr>
+            <tr><td colspan="9" style="padding:16px 12px;color:#4a5568">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -243,6 +248,29 @@
       </div>
     </div>
 
+    <!-- Transport Config -->
+    <div id="page-config-transport" class="page">
+      <h2>Transport Configuration</h2>
+      <div class="config-sections">
+        <div class="config-card">
+          <h3>HTTP/2 Transport <span class="badge">Global</span></h3>
+          <div class="form-row" style="display:flex;align-items:center;justify-content:space-between">
+            <label style="margin:0">Enable TLS (h2 over TLS)<br><span style="font-size:0.72rem;color:#4a5568">Off = h2c cleartext (default)</span></label>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
+              <input type="checkbox" id="global-tls" style="opacity:0;width:0;height:0" onchange="updateTlsSlider()">
+              <span id="tls-slider" onclick="toggleTls()" style="position:absolute;cursor:pointer;inset:0;background:#4a5568;border-radius:24px;transition:background .3s"></span>
+              <span id="tls-knob" onclick="toggleTls()" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#e2e8f0;border-radius:50%;transition:transform .3s"></span>
+            </label>
+          </div>
+          <p style="font-size:0.75rem;color:#718096;margin-top:12px">Applies to all services (NRF, AMF, UDM). Self-signed certificate will be auto-generated if not present.</p>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint">Restart all services for changes to take effect</span>
+        <button class="btn btn-primary" onclick="saveTransport()">Save</button>
+      </div>
+    </div>
+
     <!-- NRF Config -->
     <div id="page-config-nrf" class="page">
       <h2>NRF Configuration</h2>
@@ -255,7 +283,7 @@
       </div>
       <div class="save-bar">
         <span class="save-hint">Restart NRF service for changes to take effect</span>
-        <button class="btn btn-primary" onclick="saveSection('nrf')">Save</button>
+        <button class="btn btn-primary" onclick="saveNrf()">Save</button>
       </div>
     </div>
 
@@ -269,8 +297,20 @@
           <div class="form-row"><label>Port</label><input id="amf-port" type="number" placeholder="9999"></div>
           <div class="form-row"><label>FQDN</label><input id="amf-fqdn" placeholder="fe-1.amf.5gc.mnc080.mcc240.3gppnetwork.org"></div>
           <div class="form-row"><label>Instance ID</label><input id="amf-instance_id" placeholder="F63F4247-..."></div>
-          <div class="form-row"><label>NRF Host (override, leave blank to use global NRF)</label><input id="amf-nrf_host" placeholder="e.g. 10.0.0.1"></div>
+          <div class="form-row"><label>Locality</label><input id="amf-locality" placeholder="e.g. LN (optional)"></div>
+          <div class="form-row"><label>NRF Host (override)</label><input id="amf-nrf_host" placeholder="e.g. 10.0.0.1"></div>
           <div class="form-row"><label>NRF Port (override)</label><input id="amf-nrf_port" type="number" placeholder="8000"></div>
+        </div>
+        <div class="config-card">
+          <h3>PLMN &amp; Slice <span class="badge">amfInfo</span></h3>
+          <div class="form-row"><label>MCC</label><input id="amf-mcc" placeholder="240"></div>
+          <div class="form-row"><label>MNC</label><input id="amf-mnc" placeholder="080"></div>
+          <div class="form-row"><label>AMF Region ID</label><input id="amf-amf_region_id" placeholder="FF"></div>
+          <div class="form-row"><label>AMF Set ID</label><input id="amf-amf_set_id" placeholder="001"></div>
+          <div class="form-row"><label>AMF ID (GUAMI)</label><input id="amf-amf_id" placeholder="FF0001"></div>
+          <div class="form-row"><label>TAC</label><input id="amf-tac" placeholder="000001"></div>
+          <div class="form-row"><label>S-NSSAI SST</label><input id="amf-sst" type="number" placeholder="1"></div>
+          <div class="form-row"><label>S-NSSAI SD</label><input id="amf-sd" placeholder="000001"></div>
         </div>
         <div class="config-card">
           <h3>LMF Connection <span class="badge">LMF</span></h3>
@@ -292,9 +332,23 @@
           <h3>Unified Data Management <span class="badge">UDM</span></h3>
           <div class="form-row"><label>Host / IP</label><input id="udm-host" placeholder="127.0.0.1"></div>
           <div class="form-row"><label>Port</label><input id="udm-port" type="number" placeholder="5555"></div>
+          <div class="form-row"><label>FQDN</label><input id="udm-fqdn" placeholder="udm.5gc.mnc080.mcc240.3gppnetwork.org"></div>
           <div class="form-row"><label>Instance ID</label><input id="udm-instance_id" placeholder="66909D42-..."></div>
           <div class="form-row"><label>NRF Host (override, leave blank to use global NRF)</label><input id="udm-nrf_host" placeholder="e.g. 10.0.0.1"></div>
           <div class="form-row"><label>NRF Port (override)</label><input id="udm-nrf_port" type="number" placeholder="8000"></div>
+        </div>
+        <div class="config-card">
+          <h3>PLMN &amp; Slice <span class="badge">NF Profile</span></h3>
+          <div class="form-row"><label>MCC</label><input id="udm-mcc" placeholder="240"></div>
+          <div class="form-row"><label>MNC</label><input id="udm-mnc" placeholder="080"></div>
+          <div class="form-row"><label>Routing Indicator</label><input id="udm-routing_indicator" placeholder="0000"></div>
+        </div>
+        <div class="config-card">
+          <h3>SUPI / GPSI Ranges <span class="badge">udmInfo</span></h3>
+          <div class="form-row"><label>SUPI Range Start</label><input id="udm-supi_range_start" placeholder="240800000000000"></div>
+          <div class="form-row"><label>SUPI Range End</label><input id="udm-supi_range_end" placeholder="240809999999999"></div>
+          <div class="form-row"><label>GPSI Range Start (MSISDN)</label><input id="udm-gpsi_range_start" placeholder="46700000000"></div>
+          <div class="form-row"><label>GPSI Range End (MSISDN)</label><input id="udm-gpsi_range_end" placeholder="46709999999"></div>
         </div>
       </div>
       <div class="save-bar">
@@ -433,21 +487,42 @@ function fillInputs(cfg) {
   const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
   set('nrf-host', cfg.nrf?.host);
   set('nrf-port', cfg.nrf?.port);
+  // TLS toggle
+  const tlsOn = cfg.tls === true;
+  document.getElementById('global-tls').checked = tlsOn;
+  updateTlsSlider();
   set('amf-host', cfg.amf?.host);
   set('amf-port', cfg.amf?.port);
   set('amf-fqdn', cfg.amf?.fqdn);
   set('amf-instance_id', cfg.amf?.instance_id);
+  set('amf-locality', cfg.amf?.locality);
   set('amf-nrf_host', cfg.amf?.nrf_host);
   set('amf-nrf_port', cfg.amf?.nrf_port);
+  set('amf-mcc', cfg.amf?.mcc);
+  set('amf-mnc', cfg.amf?.mnc);
+  set('amf-amf_region_id', cfg.amf?.amf_region_id);
+  set('amf-amf_set_id', cfg.amf?.amf_set_id);
+  set('amf-amf_id', cfg.amf?.amf_id);
+  set('amf-tac', cfg.amf?.tac);
+  set('amf-sst', cfg.amf?.sst);
+  set('amf-sd', cfg.amf?.sd);
   set('lmf-host', cfg.lmf?.host);
   set('lmf-port', cfg.lmf?.port);
   set('lmf2-host', cfg.lmf?.host);
   set('lmf2-port', cfg.lmf?.port);
   set('udm-host', cfg.udm?.host);
   set('udm-port', cfg.udm?.port);
+  set('udm-fqdn', cfg.udm?.fqdn);
   set('udm-instance_id', cfg.udm?.instance_id);
   set('udm-nrf_host', cfg.udm?.nrf_host);
   set('udm-nrf_port', cfg.udm?.nrf_port);
+  set('udm-mcc', cfg.udm?.mcc);
+  set('udm-mnc', cfg.udm?.mnc);
+  set('udm-routing_indicator', cfg.udm?.routing_indicator);
+  set('udm-supi_range_start', cfg.udm?.supi_range_start);
+  set('udm-supi_range_end', cfg.udm?.supi_range_end);
+  set('udm-gpsi_range_start', cfg.udm?.gpsi_range_start);
+  set('udm-gpsi_range_end', cfg.udm?.gpsi_range_end);
   set('gmlc-host', cfg.gmlc?.host);
   set('gmlc-port', cfg.gmlc?.port);
 }
@@ -480,8 +555,17 @@ async function saveAmfAndLmf() {
       port: getVal('amf-port'),
       fqdn: getVal('amf-fqdn'),
       instance_id: getVal('amf-instance_id'),
+      locality: getVal('amf-locality'),
       nrf_host: getVal('amf-nrf_host'),
       nrf_port: getVal('amf-nrf_port'),
+      mcc: getVal('amf-mcc'),
+      mnc: getVal('amf-mnc'),
+      amf_region_id: getVal('amf-amf_region_id'),
+      amf_set_id: getVal('amf-amf_set_id'),
+      amf_id: getVal('amf-amf_id'),
+      tac: getVal('amf-tac'),
+      sst: getVal('amf-sst'),
+      sd: getVal('amf-sd'),
     },
     lmf: {
       host: getVal('lmf-host'),
@@ -493,6 +577,28 @@ async function saveAmfAndLmf() {
 
 async function saveLmfFromPage() {
   const body = { lmf: { host: getVal('lmf2-host'), port: getVal('lmf2-port') } };
+  await postConfig(body);
+}
+
+function toggleTls() {
+  const cb = document.getElementById('global-tls');
+  cb.checked = !cb.checked;
+  updateTlsSlider();
+}
+
+function updateTlsSlider() {
+  const on = document.getElementById('global-tls').checked;
+  document.getElementById('tls-slider').style.background = on ? '#48bb78' : '#4a5568';
+  document.getElementById('tls-knob').style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+}
+
+async function saveTransport() {
+  const body = { tls: document.getElementById('global-tls').checked };
+  await postConfig(body);
+}
+
+async function saveNrf() {
+  const body = { nrf: { host: getVal('nrf-host'), port: getVal('nrf-port') } };
   await postConfig(body);
 }
 
@@ -519,31 +625,55 @@ async function postConfig(body) {
 
 async function loadNrfRegistry() {
   const tbody = document.getElementById('nrf-registry-body');
-  tbody.innerHTML = '<tr><td colspan="7" style="padding:16px 12px;color:#4a5568">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" style="padding:16px 12px;color:#4a5568">Loading...</td></tr>';
   try {
     const res = await fetch(`${API}/api/nrf/instances`);
     const data = await res.json();
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px 12px;color:#4a5568">No NF instances registered.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px 12px;color:#4a5568">No NF instances registered.</td></tr>';
       return;
     }
     const typeColors = { AMF:'#63b3ed', UDM:'#f6ad55', LMF:'#fc8181', GMLC:'#b794f4', NRF:'#68d391', SMF:'#76e4f7', PCF:'#fbd38d', OTHER:'#a0aec0' };
     tbody.innerHTML = data.map(nf => {
       const color = typeColors[nf.nfType] || '#a0aec0';
-      const services = (nf.services || []).map(s => s.serviceName).join(', ') || '-';
+      // Address: prefer ipv4Addresses, fallback to ipv4Addr
+      const addrs = nf.ipv4Addresses || (nf.ipv4Addr ? [nf.ipv4Addr] : []);
+      const port = nf.port || (nf.nfServices && nf.nfServices[0]?.ipEndPoints?.[0]?.port) || '';
+      const addrStr = addrs.length ? addrs[0] + (port ? ':' + port : '') : '-';
+      // Services: prefer nfServices, fallback to services
+      const svcList = nf.nfServices || nf.services || [];
+      const services = svcList.map(s => s.serviceName).join(', ') || '-';
+      // PLMN
+      const plmn = (nf.plmnList || []).map(p => p.mcc + '/' + p.mnc).join(', ') || '-';
+      // NF Info summary
+      let info = '-';
+      if (nf.amfInfo) {
+        const guami = (nf.amfInfo.guamiList || []).map(g => g.amfId).join(',');
+        const tacs = (nf.amfInfo.taiList || []).map(t => t.tac).join(',');
+        info = `GUAMI:${guami} TAC:${tacs}`;
+      } else if (nf.udmInfo) {
+        const supi = (nf.udmInfo.supiRanges || []).map(r => r.start + '-' + r.end).join(', ');
+        const gpsi = (nf.udmInfo.gpsiRanges || []).map(r => r.start + '-' + r.end).join(', ');
+        info = `SUPI:${supi}`;
+        if (gpsi) info += ` GPSI:${gpsi}`;
+      }
+      // Status
+      const status = nf.nfStatus || nf.status || '-';
       const regTime = nf.registrationTime ? nf.registrationTime.replace('T',' ').replace('Z','') : '-';
       return `<tr style="border-bottom:1px solid #1a2035">
         <td style="padding:8px 12px"><span style="color:${color};font-weight:600">${nf.nfType}</span></td>
         <td style="padding:8px 12px;font-family:monospace;font-size:0.75rem;color:#a0aec0">${nf.nfInstanceId}</td>
-        <td style="padding:8px 12px">${nf.ipv4Addr}:${nf.port}</td>
+        <td style="padding:8px 12px">${addrStr}</td>
         <td style="padding:8px 12px;color:#718096">${nf.fqdn || '-'}</td>
+        <td style="padding:8px 12px;color:#718096">${plmn}</td>
+        <td style="padding:8px 12px;color:#718096;font-size:0.72rem">${info}</td>
         <td style="padding:8px 12px;color:#718096">${services}</td>
-        <td style="padding:8px 12px"><span style="color:#68d391">${nf.status}</span></td>
+        <td style="padding:8px 12px"><span style="color:#68d391">${status}</span></td>
         <td style="padding:8px 12px;color:#718096;font-size:0.75rem">${regTime}</td>
       </tr>`;
     }).join('');
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="7" style="padding:16px 12px;color:#fc8181">Failed to load: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="padding:16px 12px;color:#fc8181">Failed to load: ${e.message}</td></tr>`;
   }
 }
 

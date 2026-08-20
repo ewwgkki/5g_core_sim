@@ -33,6 +33,42 @@ ERROR: No matching distribution found for contextvars>=2.1; python_version < "3.
 pip install failed with exit code 1
 ethlab55[GMPC24-ICP2501,db1]:/home/ewwgkki/5g_core_sim # # Change History
 
+## [0.8] - 2026-08-20
+
+### Added
+- `web/static/index.html` — Transport configuration page (independent TLS global toggle)
+- `web/static/index.html` — NRF Registry table now shows PLMN, NF Info (GUAMI/TAC for AMF, SUPI/GPSI ranges for UDM), and full nfServices
+- `amf/config.py` — AMF NF Profile fields: MCC, MNC, locality, amfRegionId, amfSetId, amfId, TAC, SST, SD
+- `udm/config.py` — UDM NF Profile fields: FQDN, MCC, MNC, routingIndicator, supiRanges, gpsiRanges
+- `web/static/index.html` — AMF config page: PLMN & amfInfo card (MCC, MNC, Region ID, Set ID, AMF ID, TAC, S-NSSAI)
+- `web/static/index.html` — UDM config page: PLMN & Slice card, SUPI/GPSI Ranges card
+- `lib/hyperframe-5.2.0-py2.py3-none-any.whl` — h2 dependency for Python 3.6
+- `lib/hpack-3.0.0-py2.py3-none-any.whl` — h2 dependency for Python 3.6
+- `lib/Hypercorn-0.5.4-py3-none-any.whl` — last Hypercorn version supporting Python 3.6 (HTTP/2 h2c)
+- `lib/pytoml-0.1.21-py2.py3-none-any.whl` — Hypercorn 0.5.4 dependency
+- `utils/bootstrap.py` — dependency check now imports `hypercorn.asyncio.serve` (catches broken installs)
+- `utils/bootstrap.py` — legacy mode uses `--force-reinstall` to ensure patched whl is installed
+
+### Changed
+- `nrf/models.py` — NFInstance model extended: `ipv4Addresses`, `plmnList`, `sNssais`, `amfInfo`, `udmInfo`, `nfServices` (full 3GPP NF Profile)
+- `nrf/models.py` — NFService model extended: `serviceInstanceId`, `scheme`, `nfServiceStatus`, `fqdn`, `ipEndPoints`, `versions`, `defaultNotificationSubscriptions`
+- `nrf/models.py` — `ipv4Addr`, `port` now Optional (new format uses `ipv4Addresses` + `nfServices.ipEndPoints`)
+- `amf/main.py` — `register_to_nrf()` payload: full 3GPP NF Profile with amfInfo, plmnList, sNssais, nfServices (namf-comm + namf-loc with ipEndPoints, versions, defaultNotificationSubscriptions)
+- `udm/main.py` — `register_to_nrf()` payload: full 3GPP NF Profile with udmInfo (supiRanges, gpsiRanges, routingIndicators), plmnList, sNssais, nfServices
+- `amf/main.py`, `udm/main.py` — replaced `lifespan` context manager with `@app.on_event("startup"/"shutdown")` (compatible with FastAPI 0.63.0 + Starlette 0.13.6)
+- `web/static/index.html` — TLS toggle moved from NRF config page to independent Transport page
+- `web/static/index.html` — TLS toggle redesigned as sliding switch (grey=off left, green=on right)
+- `web/config_store.py` — `load()` skips non-dict items when merging defaults (fixes `tls: bool` crash)
+- `web/main.py` — `update_config()` handles non-dict values (direct assignment instead of `.update()`)
+- `requirements.txt` — Hypercorn pinned to 0.5.4, added hyperframe, hpack, pytoml for Python 3.6 compatibility
+
+### Fixed
+- `web/config_store.py` — `'bool' object has no attribute 'items'` crash when loading config with `tls` field
+- `web/main.py` — `'bool' object has no attribute 'update'` crash when saving TLS config
+- `amf/main.py`, `udm/main.py` — startup tasks (NRF registration, LMF monitor) not executing due to `lifespan` parameter being silently ignored by Starlette 0.13.6
+
+---
+
 ## [0.7] - 2026-08-18
 
 ### Added

@@ -16,7 +16,7 @@ import utils.contextvars_stub  # noqa
 from utils.bootstrap import ensure_deps
 ensure_deps()
 
-import uvicorn
+from utils.serve import serve
 from utils.path import init_sys_path
 init_sys_path()
 
@@ -30,5 +30,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     host = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_HOST
     port = int(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_PORT
-    print("Starting UDM service: http://{}:{}".format(host, port))
-    uvicorn.run(app, host=host, port=port)
+    print("Starting UDM service: https://{}:{}".format(host, port))
+    serve("udm.main:app", host=host, port=port)

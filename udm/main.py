@@ -3,7 +3,6 @@
 
 import logging
 import asyncio
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from udm.api.uecm import router as uecm_router
 from udm.api.ueau import router as ueau_router
@@ -15,13 +14,64 @@ async def register_to_nrf():
     nf_profile = {
         "nfInstanceId": config.UDM_INSTANCE_ID,
         "nfType": "UDM",
-        "status": "REGISTERED",
-        "ipv4Addr": config.UDM_HOST,
-        "port": config.UDM_PORT,
-        "services": [
-            {"serviceName": "nudm-uecm", "version": "v1"},
-            {"serviceName": "nudm-ueau", "version": "v1"},
-            {"serviceName": "nudm-sdm",  "version": "v1"}
+        "nfStatus": "REGISTERED",
+        "ipv4Addresses": [config.UDM_HOST],
+        "fqdn": config.UDM_FQDN,
+        "plmnList": [
+            {"mcc": config.UDM_MCC, "mnc": config.UDM_MNC}
+        ],
+        "sNssais": [
+            {"sst": 1, "sd": "000001"}
+        ],
+        "udmInfo": {
+            "routingIndicators": [config.UDM_ROUTING_INDICATOR],
+            "supiRanges": [
+                {"start": config.UDM_SUPI_RANGE_START, "end": config.UDM_SUPI_RANGE_END}
+            ],
+            "gpsiRanges": [
+                {"start": config.UDM_GPSI_RANGE_START, "end": config.UDM_GPSI_RANGE_END}
+            ]
+        },
+        "nfServices": [
+            {
+                "serviceInstanceId": "nudm-uecm",
+                "serviceName": "nudm-uecm",
+                "scheme": "http",
+                "nfServiceStatus": "REGISTERED",
+                "fqdn": config.UDM_FQDN,
+                "ipEndPoints": [
+                    {"ipv4Address": config.UDM_HOST, "port": config.UDM_PORT, "transport": "TCP"}
+                ],
+                "versions": [
+                    {"apiFullVersion": "1.1.0", "apiVersionInUri": "v1"}
+                ]
+            },
+            {
+                "serviceInstanceId": "nudm-sdm",
+                "serviceName": "nudm-sdm",
+                "scheme": "http",
+                "nfServiceStatus": "REGISTERED",
+                "fqdn": config.UDM_FQDN,
+                "ipEndPoints": [
+                    {"ipv4Address": config.UDM_HOST, "port": config.UDM_PORT, "transport": "TCP"}
+                ],
+                "versions": [
+                    {"apiFullVersion": "1.0.0", "apiVersionInUri": "v1"}
+                ]
+            },
+            {
+                "serviceInstanceId": "nudm-ueau",
+                "serviceName": "nudm-ueau",
+                "scheme": "http",
+                "nfServiceStatus": "REGISTERED",
+                "fqdn": config.UDM_FQDN,
+                "ipEndPoints": [
+                    {"ipv4Address": config.UDM_HOST, "port": config.UDM_PORT, "transport": "TCP"}
+                ],
+                "versions": [
+                    {"apiFullVersion": "1.0.0", "apiVersionInUri": "v1"}
+                ]
+            }
         ]
     }
     url = f"{config.NRF_BASE_URI}/nf-instances/{config.UDM_INSTANCE_ID}"
@@ -57,17 +107,16 @@ async def wait_and_register():
             registered = False
         await asyncio.sleep(5)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+app = FastAPI(title="UDM - Unified Data Management")
+
+@app.on_event("startup")
+async def startup():
     logging.info("UDM service starting...")
     asyncio.create_task(wait_and_register())
-    yield
-    logging.info("UDM service shutting down...")
 
-app = FastAPI(
-    title="UDM - Unified Data Management",
-    lifespan=lifespan
-)
+@app.on_event("shutdown")
+async def shutdown():
+    logging.info("UDM service shutting down...")
 
 app.include_router(uecm_router)
 app.include_router(ueau_router)
