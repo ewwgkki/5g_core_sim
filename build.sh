@@ -21,13 +21,22 @@ fi
 PYTHON_VER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 echo "  Python: $PYTHON_VER"
 
-pip3 install --quiet pyinstaller 2>/dev/null || pip3 install pyinstaller --user --quiet
-echo "  PyInstaller: $(python3 -m PyInstaller --version 2>/dev/null || echo 'installed')"
+# Create virtual environment for build
+VENV_DIR="$SCRIPT_DIR/.build_venv"
+if [ ! -d "$VENV_DIR" ]; then
+    echo "  Creating build virtual environment..."
+    python3 -m venv "$VENV_DIR"
+fi
+source "$VENV_DIR/bin/activate"
+pip install --quiet --upgrade pip
+
+pip install --quiet pyinstaller
+echo "  PyInstaller: $(python -m PyInstaller --version 2>/dev/null || echo 'installed')"
 
 # ── 2. Install project dependencies ──────────────────
 echo ""
 echo "[2/5] Installing project dependencies..."
-pip3 install --quiet -r requirements-modern.txt 2>/dev/null || pip3 install -r requirements-modern.txt --user --quiet
+pip install --quiet -r requirements-modern.txt
 
 # ── 3. Run PyInstaller ────────────────────────────────
 echo ""
@@ -232,3 +241,6 @@ echo "Contents:"
 du -sh "$DIST"
 echo ""
 ls "$DIST"/*.sh "$DIST/config.json" 2>/dev/null
+
+# Deactivate build venv
+deactivate 2>/dev/null || true
