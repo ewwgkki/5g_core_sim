@@ -128,6 +128,7 @@ find "$DIST" -name ".DS_Store" -delete 2>/dev/null || true
 echo ""
 echo "[5/5] Creating launcher scripts..."
 
+# Main web console launcher
 cat > "$DIST/start.sh" << 'EOF'
 #!/usr/bin/env bash
 # Start 5G Core Sim Web Console (manages all services)
@@ -141,6 +142,59 @@ echo "To stop: kill $!"
 EOF
 chmod +x "$DIST/start.sh"
 
+# Individual service launchers
+cat > "$DIST/start_nrf.sh" << 'EOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+HOST=${1:-127.0.0.1}
+PORT=${2:-8000}
+echo "Starting NRF on $HOST:$PORT ..."
+python3 run_nrf.py "$HOST" "$PORT" &
+echo "NRF PID: $!"
+EOF
+chmod +x "$DIST/start_nrf.sh"
+
+cat > "$DIST/start_amf.sh" << 'EOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+HOST=${1:-127.0.0.1}
+PORT=${2:-9999}
+echo "Starting AMF on $HOST:$PORT ..."
+python3 run_amf.py "$HOST" "$PORT" &
+echo "AMF PID: $!"
+EOF
+chmod +x "$DIST/start_amf.sh"
+
+cat > "$DIST/start_udm.sh" << 'EOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+HOST=${1:-127.0.0.1}
+PORT=${2:-5555}
+echo "Starting UDM on $HOST:$PORT ..."
+python3 run_udm.py "$HOST" "$PORT" &
+echo "UDM PID: $!"
+EOF
+chmod +x "$DIST/start_udm.sh"
+
+cat > "$DIST/start_all.sh" << 'EOF'
+#!/usr/bin/env bash
+# Start all services individually (no Web Console)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+echo "Starting all 5G Core services..."
+bash start_nrf.sh
+sleep 2
+bash start_amf.sh
+bash start_udm.sh
+echo ""
+echo "All services started. Config: config.json"
+echo "To stop all: ./stop.sh"
+EOF
+chmod +x "$DIST/start_all.sh"
+
 cat > "$DIST/stop.sh" << 'EOF'
 #!/usr/bin/env bash
 # Stop all 5G Core Sim processes
@@ -149,6 +203,7 @@ pkill -f "5g_core_sim" 2>/dev/null
 pkill -f "run_nrf.py" 2>/dev/null
 pkill -f "run_amf.py" 2>/dev/null
 pkill -f "run_udm.py" 2>/dev/null
+pkill -f "run_web.py" 2>/dev/null
 echo "Done."
 EOF
 chmod +x "$DIST/stop.sh"
@@ -161,10 +216,19 @@ echo "Output: dist/5g_core_sim/"
 echo ""
 echo "To deploy:"
 echo "  1. Copy dist/5g_core_sim/ to target machine"
-echo "  2. Run: ./start.sh"
-echo "  3. Open: http://127.0.0.1:8080"
+echo "  2. Edit config.json as needed"
+echo ""
+echo "Start options:"
+echo "  ./start.sh           — Web Console (GUI manages all services)"
+echo "  ./start_all.sh       — Start NRF + AMF + UDM without Web Console"
+echo "  ./start_nrf.sh       — Start NRF only"
+echo "  ./start_amf.sh       — Start AMF only"
+echo "  ./start_udm.sh       — Start UDM only"
+echo "  ./stop.sh            — Stop everything"
+echo ""
+echo "Optional args: ./start_nrf.sh [host] [port]"
 echo ""
 echo "Contents:"
 du -sh "$DIST"
 echo ""
-ls -la "$DIST/start.sh" "$DIST/stop.sh" "$DIST/5g_core_sim" "$DIST/config.json"
+ls "$DIST"/*.sh "$DIST/config.json" 2>/dev/null
