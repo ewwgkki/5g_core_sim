@@ -7,6 +7,7 @@ CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.j
 
 DEFAULTS = {
     "tls": False,
+    "log_level": "INFO",
     "nrf": {"host": "127.0.0.1", "port": 8000},
     "amf": {
         "host": "127.0.0.1",
@@ -52,8 +53,9 @@ def load() -> dict:
         data = json.load(f)
     # merge with defaults to ensure all keys exist
     data.setdefault("tls", False)
+    data.setdefault("log_level", "INFO")
     for section, values in DEFAULTS.items():
-        if section == "tls":
+        if section in ("tls", "log_level"):
             continue
         if section not in data:
             data[section] = values

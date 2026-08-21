@@ -13,6 +13,13 @@ import httpx
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
+# Apply configurable log level
+from web.config_store import get_section as _get_section
+_log_level = _get_section("log_level") or "INFO"
+if isinstance(_log_level, str):
+    logging.basicConfig(level=getattr(logging, _log_level.upper(), logging.INFO),
+                        format="%(asctime)s [%(levelname)s] %(message)s")
+
 from amf.api import namf_loc
 from amf.api import namf_comm
 from amf.api.namf_loc import monitor_lmf

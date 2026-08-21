@@ -264,6 +264,19 @@
           </div>
           <p style="font-size:0.75rem;color:#718096;margin-top:12px">Applies to all services (NRF, AMF, UDM). Self-signed certificate will be auto-generated if not present.</p>
         </div>
+        <div class="config-card">
+          <h3>Logging <span class="badge">Global</span></h3>
+          <div class="form-row">
+            <label>Log Level</label>
+            <select id="global-log-level" style="width:100%;background:#0f1117;border:1px solid #2d3748;border-radius:6px;padding:8px 12px;color:#e2e8f0;font-size:0.875rem;outline:none">
+              <option value="DEBUG">DEBUG</option>
+              <option value="INFO" selected>INFO</option>
+              <option value="WARNING">WARNING</option>
+              <option value="ERROR">ERROR</option>
+            </select>
+          </div>
+          <p style="font-size:0.75rem;color:#718096;margin-top:12px">Controls AMF/UDM service log verbosity. Restart services after changing.</p>
+        </div>
       </div>
       <div class="save-bar">
         <span class="save-hint">Restart all services for changes to take effect</span>
@@ -492,6 +505,9 @@ function fillInputs(cfg) {
   const tlsOn = cfg.tls === true;
   document.getElementById('global-tls').checked = tlsOn;
   updateTlsSlider();
+  // Log level
+  const logLevel = cfg.log_level || 'INFO';
+  document.getElementById('global-log-level').value = logLevel;
   set('amf-host', cfg.amf?.host);
   set('amf-port', cfg.amf?.port);
   set('amf-fqdn', cfg.amf?.fqdn);
@@ -594,7 +610,10 @@ function updateTlsSlider() {
 }
 
 async function saveTransport() {
-  const body = { tls: document.getElementById('global-tls').checked };
+  const body = {
+    tls: document.getElementById('global-tls').checked,
+    log_level: document.getElementById('global-log-level').value
+  };
   await postConfig(body);
 }
 
