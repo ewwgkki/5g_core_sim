@@ -1,7 +1,7 @@
 # nrf/main.py
 # Created by Kai Wang G on 2025-05-20.
 
-from datetime import datetime, timezone
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, Query
 from typing import List, Optional
 from nrf.models import NFInstance, NFType
@@ -17,7 +17,7 @@ def register_or_update_nf(nfInstanceId: str, nf_instance: NFInstance):
         existing = nf_registry.get(nfInstanceId)
         nf_instance.registrationTime = (
             existing.registrationTime if existing
-            else datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
     nf_registry[nfInstanceId] = nf_instance
     return nf_instance
@@ -30,7 +30,7 @@ def register_nf_legacy(nf_instance: NFInstance):
         existing = nf_registry.get(nfInstanceId)
         nf_instance.registrationTime = (
             existing.registrationTime if existing
-            else datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
     nf_registry[nfInstanceId] = nf_instance
     return {"result": "NF registered successfully."}
