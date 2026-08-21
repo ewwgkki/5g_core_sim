@@ -1,6 +1,6 @@
 {
-  "tls": false,
-  "log_level": "INFO",
+  "tls": true,
+  "log_level": "DEBUG",
   "nrf": {
     "host": "127.0.0.1",
     "port": 8000

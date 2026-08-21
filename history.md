@@ -33,6 +33,32 @@ ERROR: No matching distribution found for contextvars>=2.1; python_version < "3.
 pip install failed with exit code 1
 ethlab55[GMPC24-ICP2501,db1]:/home/ewwgkki/5g_core_sim # # Change History
 
+## [0.8.1] - 2026-08-21
+
+### Added
+- `build.sh` — PyInstaller packaging script, produces standalone distribution
+- `dist/5g_core_sim/start.sh` — Web Console launcher (background)
+- `dist/5g_core_sim/start_all.sh` — Start NRF + AMF + UDM without Web Console
+- `dist/5g_core_sim/start_nrf.sh` — Start NRF individually (optional host/port args)
+- `dist/5g_core_sim/start_amf.sh` — Start AMF individually (optional host/port args)
+- `dist/5g_core_sim/start_udm.sh` — Start UDM individually (optional host/port args)
+- `dist/5g_core_sim/stop.sh` — Stop all services
+- `web/static/index.html` — Transport config page: Log Level selector (DEBUG/INFO/WARNING/ERROR)
+- `config.json` — `log_level` global field
+- `amf/main.py`, `udm/main.py` — configurable log level from config.json
+
+### Changed
+- `web/main.py` — stop service now kills orphaned processes by port (handles Web Console restart)
+- `nrf/main.py` — `registrationTime` uses local time instead of UTC
+- `amf/main.py`, `udm/main.py` — httpx/httpcore INFO logs suppressed (NRF health check no longer floods event log)
+- `web/static/index.html` — NRF Registry auto-loads when navigating to page (no manual Refresh needed)
+
+### Fixed
+- `web/static/index.html` — TLS toggle click not working (label/checkbox double-toggle event conflict)
+- `web/main.py` — stop service fails for orphaned processes after Web Console restart (port still occupied)
+
+---
+
 ## [0.8] - 2026-08-20
 
 ### Added

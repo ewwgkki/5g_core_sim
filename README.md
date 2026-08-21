@@ -21,6 +21,7 @@ project_root/
 ├── requirements.txt         <- Python 3.6 dependencies (offline, lib/)
 ├── requirements-modern.txt  <- Python 3.8+ dependencies (PyPI)
 ├── config.json              <- Unified config file (auto-generated, all services read from here)
+├── build.sh                 <- PyInstaller packaging script
 ├── run_nrf.py               <- Start NRF service
 ├── run_amf.py               <- Start AMF service
 ├── run_udm.py               <- Start UDM service
@@ -122,6 +123,7 @@ Phase 5 - Web GUI Checklist:
   [x] Dashboard: one-click start/stop for each service
   [x] Dashboard: event log panel
   [x] Transport config page: global TLS toggle (sliding switch, applies to all services)
+  [x] Transport config page: configurable log level (DEBUG/INFO/WARNING/ERROR)
   [x] NRF config page: Host/Port
   [x] AMF config page: Host/Port/FQDN/Instance ID/Locality
   [x] AMF config page: PLMN & amfInfo (MCC, MNC, Region ID, Set ID, AMF ID, TAC, S-NSSAI)
@@ -163,3 +165,21 @@ Python Version Support:
   Python 3.6:  Hypercorn 0.5.4 (HTTP/2 h2c), offline install from lib/
   Python 3.8+: Hypercorn latest (HTTP/2 h2c/h2), install from PyPI
   All versions: auto-detected, no manual configuration needed
+
+
+Build & Package (standalone deployment):
+
+  # Build standalone distribution (requires Python 3.8+ and PyInstaller)
+  ./build.sh
+
+  # Output: dist/5g_core_sim/
+  #   start.sh           — Web Console (GUI manages all services)
+  #   start_all.sh       — Start NRF + AMF + UDM without Web Console
+  #   start_nrf.sh       — Start NRF only (optional: host port args)
+  #   start_amf.sh       — Start AMF only (optional: host port args)
+  #   start_udm.sh       — Start UDM only (optional: host port args)
+  #   stop.sh            — Stop all services
+  #   config.json        — Editable configuration
+
+  # Target machine does NOT need Python or pip installed
+  # Binary is platform-specific (build on same OS/arch as target)
