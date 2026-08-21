@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 # build.sh — Build 5G Core Sim into a standalone distribution
-# Usage: ./build.sh
+# Usage: ./build.sh           (foreground, see output directly)
+#        ./build.sh --bg      (background, survives session disconnect)
 # Output: dist/5g_core_sim/ (ready to deploy)
+# Log:    build.log (when running in background)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
+
+# Background mode: re-launch self with nohup
+if [ "$1" = "--bg" ]; then
+    echo "Starting build in background..."
+    echo "Log: $SCRIPT_DIR/build.log"
+    echo "Check progress: tail -f build.log"
+    nohup bash "$0" > build.log 2>&1 &
+    echo "Build PID: $!"
+    exit 0
+fi
 
 echo "=== 5G Core Sim — Build Script ==="
 echo ""
