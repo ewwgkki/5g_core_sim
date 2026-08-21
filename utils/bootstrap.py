@@ -4,7 +4,11 @@ import sys
 import glob
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIB_DIR = os.path.join(ROOT, "lib")
+LIB_BASE = os.path.join(ROOT, "lib")
+LIB_DIR = os.path.join(LIB_BASE, "py36") if sys.version_info < (3, 8) else os.path.join(LIB_BASE, "py38+")
+# Fallback to lib/ root if subdirectories don't exist (backward compat)
+if not os.path.isdir(LIB_DIR):
+    LIB_DIR = LIB_BASE
 REQ_LEGACY = os.path.join(ROOT, "requirements.txt")          # Python 3.6, offline
 REQ_MODERN = os.path.join(ROOT, "requirements-modern.txt")   # Python 3.8+, PyPI
 
