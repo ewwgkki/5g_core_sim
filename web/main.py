@@ -98,16 +98,56 @@ def start_service(name: str):
 
 @app.post("/api/service/{name}/stop")
 def stop_service(name: str):
-    if name not in _processes or _processes[name].poll() is not None:
-        return {"ok": False, "message": f"{name} is not running"}
-    proc = _processes[name]
-    proc.send_signal(signal.SIGTERM)
+    if name not in SERVICE_SCRIPTS:
+        raise HTTPException(status_code=404, detail=f"Unknown service: {name}")
+
+    # Try stopping tracked process first
+    if name in _processes and _processes[name].poll() is None:
+        proc = _processes[name]
+        proc.send_signal(signal.SIGTERM)
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        del _processes[name]
+        return {"ok": True, "message": f"{name} stopped"}
+
+    # Fallback: kill process occupying the service port (handles orphaned processes)
+    cfg = load()
+    port = cfg.get(name, {}).get("port")
+    if port:
+        killed = _kill_by_port(int(port))
+        if killed:
+            _processes.pop(name, None)
+            return {"ok": True, "message": f"{name} stopped (killed process on port {port})"}
+
+    _processes.pop(name, None)
+    return {"ok": False, "message": f"{name} is not running"}
+
+
+def _kill_by_port(port: int) -> bool:
+    """Find and kill process listening on the given port. Returns True if killed."""
+    import platform
     try:
-        proc.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-    del _processes[name]
-    return {"ok": True, "message": f"{name} stopped"}
+        if platform.system() == "Darwin":
+            out = subprocess.check_output(
+                ["lsof", "-ti", f":{port}"], stderr=subprocess.DEVNULL
+            ).decode().strip()
+        else:
+            out = subprocess.check_output(
+                ["fuser", f"{port}/tcp"], stderr=subprocess.DEVNULL
+            ).decode().strip()
+        if out:
+            for pid_str in out.split():
+                pid = int(pid_str.strip())
+                if pid != os.getpid():
+                    os.kill(pid, signal.SIGTERM)
+            import time
+            time.sleep(1)
+            return True
+    except (subprocess.CalledProcessError, ValueError, ProcessLookupError):
+        pass
+    return False
 
 @app.get("/api/service/{name}/status")
 async def service_status(name: str):
