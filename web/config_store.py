@@ -8,6 +8,7 @@ CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.j
 DEFAULTS = {
     "tls": False,
     "log_level": "INFO",
+    "web": {"host": "0.0.0.0", "port": 8080},
     "nrf": {"host": "127.0.0.1", "port": 8000},
     "amf": {
         "host": "127.0.0.1",

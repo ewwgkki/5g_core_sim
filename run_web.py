@@ -19,7 +19,9 @@ init_sys_path()
 from utils.serve import serve
 
 if __name__ == "__main__":
-    host = sys.argv[1] if len(sys.argv) > 1 else "0.0.0.0"
-    port = int(sys.argv[2]) if len(sys.argv) > 2 else 8080
+    from web.config_store import get_section
+    _web = get_section("web") or {}
+    host = sys.argv[1] if len(sys.argv) > 1 else _web.get("host", "0.0.0.0")
+    port = int(sys.argv[2]) if len(sys.argv) > 2 else int(_web.get("port", 8080))
     print("Starting Web Console: http://{}:{}".format(host, port))
     serve("web.main:app", host=host, port=port)
