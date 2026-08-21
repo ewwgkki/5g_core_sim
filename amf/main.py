@@ -4,9 +4,14 @@
 import importlib.util
 import os
 import asyncio
+import logging
 from datetime import datetime
 from fastapi import FastAPI
 import httpx
+
+# Suppress httpx request-level logging (floods event log with GET 200 every 5s)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 from amf.api import namf_loc
 from amf.api import namf_comm

@@ -10,6 +10,10 @@ from udm.api.sdm import router as sdm_router
 import httpx
 from udm import config
 
+# Suppress httpx request-level logging
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 async def register_to_nrf():
     nf_profile = {
         "nfInstanceId": config.UDM_INSTANCE_ID,
