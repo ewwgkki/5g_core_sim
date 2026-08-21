@@ -30,3 +30,4 @@ nrf.pid
 # Large files
 *.tar.gz
 *.zip
+.build_venv/

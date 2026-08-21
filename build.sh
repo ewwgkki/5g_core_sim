@@ -28,15 +28,27 @@ if [ ! -d "$VENV_DIR" ]; then
     python3 -m venv "$VENV_DIR"
 fi
 source "$VENV_DIR/bin/activate"
-pip install --quiet --upgrade pip
+pip install --quiet --upgrade pip 2>/dev/null || true
 
-pip install --quiet pyinstaller
+# Install from local build_wheels/ if available (offline), else from PyPI
+WHEELS_DIR="$SCRIPT_DIR/build_wheels"
+if [ -d "$WHEELS_DIR" ] && [ "$(ls -A $WHEELS_DIR/*.whl 2>/dev/null)" ]; then
+    echo "  Installing from local build_wheels/ (offline)..."
+    pip install --quiet --no-index --find-links "$WHEELS_DIR" pyinstaller
+else
+    echo "  Installing from PyPI (online)..."
+    pip install --quiet pyinstaller
+fi
 echo "  PyInstaller: $(python -m PyInstaller --version 2>/dev/null || echo 'installed')"
 
 # ── 2. Install project dependencies ──────────────────
 echo ""
 echo "[2/5] Installing project dependencies..."
-pip install --quiet -r requirements-modern.txt
+if [ -d "$WHEELS_DIR" ] && [ "$(ls -A $WHEELS_DIR/*.whl 2>/dev/null)" ]; then
+    pip install --quiet --no-index --find-links "$WHEELS_DIR" -r requirements-modern.txt
+else
+    pip install --quiet -r requirements-modern.txt
+fi
 
 # ── 3. Run PyInstaller ────────────────────────────────
 echo ""
